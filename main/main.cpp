@@ -3,7 +3,7 @@
 #include <chrono>
 
 int main() {
-    const int N = 20;
+    const int N = 20000000000;
     size_t size = N * sizeof(float);
 
     float *A, *B, *C;          // Host vectors
@@ -28,8 +28,7 @@ int main() {
     auto start = std::chrono::high_resolution_clock::now();
     VecAdd<<<1, N>>>(d_A, d_B, d_C); // 1 block, n threads
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
+    
 
     // We copy back to host.
     cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
@@ -43,6 +42,9 @@ int main() {
     free(A);
     free(B);
     free(C);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
 
     std::cout << "GPU Vector addition completed in " << duration.count() << " milliseconds." << std::endl;
     
