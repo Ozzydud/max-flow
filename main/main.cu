@@ -2,6 +2,13 @@
 #include <cuda_runtime.h>
 #include <chrono>
 
+// Kernel definition corrected
+__global__ void VecAdd(float* d_A, float* d_B, float* d_C)
+{
+    int i = threadIdx.x;
+    d_C[i] = d_A[i] + d_B[i];
+}
+
 int main() {
     const int N = 200000000;
     size_t size = N * sizeof(float);
@@ -28,13 +35,15 @@ int main() {
     auto start = std::chrono::high_resolution_clock::now();
     VecAdd<<<1, N>>>(d_A, d_B, d_C); // 1 block, n threads
 
+    cudaDeviceSynchronize(); // Wait for the GPU to finish before stopping the timer
+
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
 
-    // We copy back to host.
+    // Copy back to host.
     cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
 
-     // Free device memory
+    // Free device memory
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
@@ -49,10 +58,3 @@ int main() {
     return 0;
 }
 
-// Kernel definition
-__global__ void VecAdd(float* d_A, float* d_B, float* d_C)
-{
-    int i = threadIdx.x;
-    a, b = threadIdx.y, threadIdx.z
-    d_C[i] = d_A[i] + d_B[i];
-}
