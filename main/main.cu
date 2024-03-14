@@ -10,6 +10,7 @@ __global__ void VecAdd(float* d_A, float* d_B, float* d_C)
 }
 
 int main() {
+    auto start = std::chrono::high_resolution_clock::now();
     const int N = 2000000000;
     size_t size = N * sizeof(float);
 
@@ -32,7 +33,7 @@ int main() {
     cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
     cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    
     VecAdd<<<1, N>>>(d_A, d_B, d_C); // 1 block, n threads
 
     
