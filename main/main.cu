@@ -10,7 +10,7 @@ __global__ void VecAdd(float* d_A, float* d_B, float* d_C)
 }
 
 int main() {
-    const int N = 20000000000;
+    const int N = 2000000000;
     size_t size = N * sizeof(float);
 
     float *A, *B, *C;          // Host vectors
