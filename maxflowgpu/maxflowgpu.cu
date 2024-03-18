@@ -102,6 +102,8 @@ int fordFulkerson(int* graph, int s, int t) {
 
             max_flow += h_path_flow;
             cudaFree(path_flow);
+
+            found_path = true;
         }
     } while (found_path);
 
