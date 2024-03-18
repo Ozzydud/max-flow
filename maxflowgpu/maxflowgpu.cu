@@ -11,9 +11,8 @@ using namespace std;
 #define V 6;
 
 // Perform bfs to find augmenting paths
-__global__ void CudaBfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent){
+__global__ void CudaBfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent, bool *visited){
     int u = blockIdx.x * blockDim.x + threadIdx.x;
-    if (*found || u >= V) return;
 
     if (visited[u]) {
         int start = u * V;
