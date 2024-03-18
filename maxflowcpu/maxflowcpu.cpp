@@ -10,7 +10,7 @@
 using namespace std;
 
 // Number of vertices in given graph
-#define V 5
+#define V 1106
 
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
@@ -109,7 +109,7 @@ int fordFulkerson(vector<vector<int>>& graph, int s, int t)
 
 
 int main() {
-    std::ifstream infile("data/cage3.mtx");
+    std::ifstream infile("data/1107data.mtx");
     std::vector<std::vector<int>> graph(V, std::vector<int>(V));
 
     for (int i = 0; i < V && infile; ++i) {
@@ -125,7 +125,7 @@ int main() {
     }
 
     cout << "The maximum possible flow is "
-		<< fordFulkerson(graph, 0, 4);
+		<< fordFulkerson(graph, 0, 2);
 
     return 0;
 }

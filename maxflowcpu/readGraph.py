@@ -23,7 +23,7 @@ def parse_mtx(mtx_lines):
     return num_rows, num_cols, non_zero_entries, matrix_data
 
 # Read the .mtx file
-mtx_file_path = '/Users/matthewwestergaard/max-flow/max-flow/data/cage3.mtx'
+mtx_file_path = 'data/gre_1107.mtx'
 with open(mtx_file_path, 'r') as file:
     lines = file.readlines()
 
@@ -42,7 +42,7 @@ for i, j, val in matrix_data:
 adjacency_matrix_int = np.rint(adjacency_matrix * 1000).astype(int)
 
 # Save the adjacency matrix to a file
-output_file_path = '/Users/matthewwestergaard/max-flow/max-flow/data/cage3.mtx' #Change to your path
+output_file_path = 'data/1107data.mtx' #Change to your path
 np.savetxt(output_file_path, adjacency_matrix_int, fmt='%d')
 
 
