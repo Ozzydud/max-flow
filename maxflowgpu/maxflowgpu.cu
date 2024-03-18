@@ -26,7 +26,7 @@ __global__ void cuda_bfs(int* rGraph, bool* visited, int* parent, int t, bool* f
     }
 
     for (int v = 0; v < V; v++) {
-        if (!visited[v] && rGraph[idx * V + v] > 0) {
+        if (!visited[v] && rGraph[idx][v] > 0) {
             parent[v] = idx;
         }
     }
@@ -38,11 +38,11 @@ __global__ void cuda_calculate_path_flow(int* rGraph, int* parent, int* path_flo
     if (idx == t) {
         int v = idx;
         int u = parent[v];
-        *path_flow = rGraph[u * V + v];
+        *path_flow = rGraph[u][v];
         while (u != s) {
             v = u;
             u = parent[v];
-            *path_flow = min(*path_flow, rGraph[u * V + v]);
+            *path_flow = min(*path_flow, rGraph[u][v]);
         }
     }
 }
@@ -56,8 +56,8 @@ __global__ void cuda_update_residual_capacities(int* rGraph, int* parent, int* p
         while (u != s) {
             v = u;
             u = parent[v];
-            rGraph[u * V + v] -= *path_flow;
-            rGraph[v * V + u] += *path_flow;
+            rGraph[u][v] -= *path_flow;
+            rGraph[v][u] += *path_flow;
         }
     }
 }
@@ -117,14 +117,16 @@ int fordFulkerson(int* graph, int s, int t) {
 
 int main() {
     std::ifstream infile("data/cage3.mtx");
-    int* graph = new int[V * V];
-    std::cout << "The maximum possible flow is " << graph << std::endl;
+    int* graph = new int[V][V];
+
 
     for (int i = 0; i < V && infile; ++i) {
         for (int j = 0; j < V && infile; ++j) {
-            infile >> graph[i * V + j];
+            infile >> graph[i][j];
         }
     }
+
+    std::cout << "The maximum possible flow is " << graph << std::endl;
 
     // Check if reading was successful
     if (!infile) {
