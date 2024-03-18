@@ -1,8 +1,6 @@
 #include <iostream>
-#include <limits.h>
-#include <queue>
-#include <vector>
 #include <fstream>
+#include <vector>
 
 // CUDA libraries
 #include <cuda_runtime.h>
@@ -26,7 +24,7 @@ __global__ void cuda_bfs(int* rGraph, bool* visited, int* parent, int t, bool* f
     }
 
     for (int v = 0; v < V; v++) {
-        if (!visited[v] && rGraph[idx][v] > 0) {
+        if (!visited[v] && rGraph[idx * V + v] > 0) {
             parent[v] = idx;
         }
     }
@@ -38,11 +36,11 @@ __global__ void cuda_calculate_path_flow(int* rGraph, int* parent, int* path_flo
     if (idx == t) {
         int v = idx;
         int u = parent[v];
-        *path_flow = rGraph[u][v];
+        *path_flow = rGraph[u * V + v];
         while (u != s) {
             v = u;
             u = parent[v];
-            *path_flow = min(*path_flow, rGraph[u][v]);
+            *path_flow = min(*path_flow, rGraph[u * V + v]);
         }
     }
 }
@@ -56,8 +54,8 @@ __global__ void cuda_update_residual_capacities(int* rGraph, int* parent, int* p
         while (u != s) {
             v = u;
             u = parent[v];
-            rGraph[u][v] -= *path_flow;
-            rGraph[v][u] += *path_flow;
+            rGraph[u * V + v] -= *path_flow;
+            rGraph[v * V + u] += *path_flow;
         }
     }
 }
@@ -116,25 +114,22 @@ int fordFulkerson(int* graph, int s, int t) {
 }
 
 int main() {
-    std::ifstream infile("data/cage3.mtx");
-    int* graph = new int[V][V];
+    std::vector<std::vector<int>> adjMatrix = {
+        {667, 367, 300, 367, 300},
+        {100, 533, 0, 200, 0},
+        {122, 0, 578, 0, 244},
+        {50, 100, 0, 283, 183},
+        {61, 0, 122, 150, 272}
+    };
 
-
-    for (int i = 0; i < V && infile; ++i) {
-        for (int j = 0; j < V && infile; ++j) {
-            infile >> graph[i][j];
+    int* graph = new int[V * V];
+    for (int i = 0; i < V; ++i) {
+        for (int j = 0; j < V; ++j) {
+            graph[i * V + j] = adjMatrix[i][j];
         }
     }
 
-    std::cout << "The maximum possible flow is " << graph << std::endl;
-
-    // Check if reading was successful
-    if (!infile) {
-        std::cerr << "Error reading from file!" << std::endl;
-        return 1;
-    }
-
-    int max_flow = fordFulkerson(graph, 0, 1000);
+    int max_flow = fordFulkerson(graph, 0, 4);
 
     std::cout << "The maximum possible flow is " << max_flow << std::endl;
 
