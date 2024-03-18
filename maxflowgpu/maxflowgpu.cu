@@ -131,7 +131,7 @@ int main() {
         return 1;
     }
 
-    int max_flow = fordFulkerson(graph, 0, 2);
+    int max_flow = fordFulkerson(graph, 0, 1000);
 
     std::cout << "The maximum possible flow is " << max_flow << std::endl;
 
