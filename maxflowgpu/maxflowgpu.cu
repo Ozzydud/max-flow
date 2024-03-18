@@ -12,7 +12,7 @@
 #define BLOCK_SIZE 5
 
 // CUDA kernel for BFS traversal
-__global__ void cuda_bfs(vector<vector<int>>& rGraph, bool* visited, int* parent, int t, bool* found) {
+__global__ void cuda_bfs(int* rGraph, bool* visited, int* parent, int t, bool* found) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (visited[idx] || *found)
         return;
@@ -33,7 +33,7 @@ __global__ void cuda_bfs(vector<vector<int>>& rGraph, bool* visited, int* parent
 }
 
 // CUDA kernel for calculating path flow
-__global__ void cuda_calculate_path_flow(vector<vector<int>>& rGraph, int* parent, int* path_flow, int s, int t) {
+__global__ void cuda_calculate_path_flow(int* rGraph, int* parent, int* path_flow, int s, int t) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx == t) {
         int v = idx;
@@ -48,7 +48,7 @@ __global__ void cuda_calculate_path_flow(vector<vector<int>>& rGraph, int* paren
 }
 
 // CUDA kernel for updating residual capacities
-__global__ void cuda_update_residual_capacities(vector<vector<int>>& rGraph, int* parent, int* path_flow, int s, int t) {
+__global__ void cuda_update_residual_capacities(int* rGraph, int* parent, int* path_flow, int s, int t) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx == t) {
         int v = idx;
@@ -63,7 +63,7 @@ __global__ void cuda_update_residual_capacities(vector<vector<int>>& rGraph, int
 }
 
 // Returns the maximum flow from s to t in the given graph
-int fordFulkerson(std::vector<std::vector<int>>& graph, int s, int t) {
+int fordFulkerson(int* graph, int s, int t) {
     int* rGraph;
     cudaMalloc(&rGraph, V * V * sizeof(int));
     cudaMemcpy(rGraph, graph, V * V * sizeof(int), cudaMemcpyHostToDevice);
