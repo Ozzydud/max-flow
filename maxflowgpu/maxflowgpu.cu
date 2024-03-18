@@ -26,7 +26,7 @@ __global__ void cuda_bfs(int* rGraph, bool* visited, int* parent, int t, bool* f
     }
 
     for (int v = 0; v < V; v++) {
-        if (!visited[v] && rGraph[idx][v] > 0) {
+        if (!visited[v] && rGraph[idx*V][v] > 0) {
             parent[v] = idx;
         }
     }
