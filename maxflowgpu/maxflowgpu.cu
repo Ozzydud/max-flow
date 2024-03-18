@@ -116,8 +116,9 @@ int fordFulkerson(int* graph, int s, int t) {
 }
 
 int main() {
-    std::ifstream infile("data/1107data.mtx");
+    std::ifstream infile("data/cage3.mtx");
     int* graph = new int[V * V];
+    std::cout << "The maximum possible flow is " << graph << std::endl;
 
     for (int i = 0; i < V && infile; ++i) {
         for (int j = 0; j < V && infile; ++j) {
