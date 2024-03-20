@@ -1,1 +1,0 @@
-# Naive Python implementation
