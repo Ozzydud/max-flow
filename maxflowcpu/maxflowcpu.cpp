@@ -238,7 +238,7 @@ int main() {
 
     int V = csrRowPtr.size()-1; // Number of vertices
     int s = 0; // Source
-    int t = csrRowPtr.size()-2; // Sink
+    int t = 1; // Sink
 
 	/* // Example: Print the contents of csrRowPtr
     for (int i : data) {
