@@ -1,4 +1,4 @@
-import numpy as np
+""" import numpy as np
 
 # Function to parse the .mtx file
 def parse_mtx(mtx_lines):
@@ -46,3 +46,44 @@ output_file_path = 'data/1107data.mtx' #Change to your path
 np.savetxt(output_file_path, adjacency_matrix_int, fmt='%d')
 
 
+ """
+import numpy as np
+
+def mtx_to_csr_and_save(mtx_file_path, output_prefix):
+    with open(mtx_file_path, 'r') as f:
+        lines = f.readlines()
+
+    # Filter out comments and empty lines
+    lines = [line.strip() for line in lines if not line.startswith('%') and line.strip()]
+
+    # Process the header
+    num_rows, num_cols, num_entries = map(int, lines[0].split())
+
+    # Initialize arrays
+    rows = []
+    cols = []
+    data = []
+
+    # Extracting data from the lines
+    for entry in lines[1:]:
+        row, col, value = map(float, entry.split())
+        rows.append(int(row) - 1)  # Adjust for 0-based indexing
+        cols.append(int(col) - 1)  # Adjust for 0-based indexing
+        data.append(value)
+
+    # Convert to CSR format
+    row_counts = np.bincount(rows, minlength=num_rows)
+    csr_row_ptr = np.zeros(num_rows + 1, dtype=np.int32)
+    np.cumsum(row_counts, out=csr_row_ptr[1:])
+    col_indices = np.array(cols, dtype=np.int32)
+    data = np.array(data, dtype=np.float32)
+
+    # Saving CSR components to files
+    np.save(f'{output_prefix}_csr_row_ptr.npy', csr_row_ptr)
+    np.save(f'{output_prefix}_col_indices.npy', col_indices)
+    np.save(f'{output_prefix}_data.npy', data)
+
+# Usage example
+mtx_file_path = 'data/cage3.mtx'
+output_prefix = 'data/csrgre_1107.mtx'
+mtx_to_csr_and_save(mtx_file_path, output_prefix)
