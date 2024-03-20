@@ -47,7 +47,7 @@ np.savetxt(output_file_path, adjacency_matrix_int, fmt='%d')
 
 
  """
-import numpy as np
+""" import numpy as np
 
 def mtx_to_csr_and_save(mtx_file_path, output_prefix):
     with open(mtx_file_path, 'r') as f:
@@ -99,4 +99,57 @@ data_path = 'data/csrgre_1107.mtx_data.npy'
 # Convert each CSR component
 npy_to_txt('data/csrgre_1107.mtx_csr_row_ptr.npy', 'data/csr_row_ptr.txt')
 npy_to_txt('data/csrgre_1107.mtx_col_indices.npy', 'data/col_indices.txt')
-npy_to_txt('data/csrgre_1107.mtx_data.npy', 'data/data.txt')
+npy_to_txt('data/csrgre_1107.mtx_data.npy', 'data/data.txt') """
+
+
+import numpy as np
+
+def mtx_to_csr(mtx_file_path):
+    with open(mtx_file_path, 'r') as f:
+        lines = f.readlines()
+
+    # Filter out comments and empty lines
+    lines = [line.strip() for line in lines if not line.startswith('%') and line.strip()]
+
+    # Process the header to get matrix dimensions
+    num_rows, num_cols, _ = map(int, lines[0].split())
+
+    # Initialize lists to store matrix data
+    rows, cols, data = [], [], []
+
+    # Extract row, column indices, and data values
+    for line in lines[1:]:
+        row, col, value = line.split()
+        rows.append(int(row) - 1)  # Adjust for 0-based indexing
+        cols.append(int(col) - 1)  # Adjust for 0-based indexing
+        data.append(float(value))
+
+    # Convert lists to numpy arrays
+    rows = np.array(rows)
+    cols = np.array(cols)
+    data = np.array(data)
+
+    # Sort by rows, then columns to ensure CSR format
+    sorted_indices = np.lexsort((cols, rows))
+    rows = rows[sorted_indices]
+    cols = cols[sorted_indices]
+    data = data[sorted_indices]
+
+    # Create CSR row pointer array
+    row_ptr = np.zeros(num_rows + 1, dtype=int)
+    np.add.at(row_ptr, rows + 1, 1)
+    np.cumsum(row_ptr, out=row_ptr)
+
+    return data, cols, row_ptr
+
+def save_to_txt(data, cols, row_ptr, prefix):
+    np.savetxt(f'{prefix}_data.txt', data, fmt='%f')
+    np.savetxt(f'{prefix}_col_indices.txt', cols, fmt='%d')
+    np.savetxt(f'{prefix}_row_ptr.txt', row_ptr, fmt='%d')
+
+# Example usage
+mtx_file_path = 'data/gre_1107.mtx'  # Update this to your file path
+prefix = 'output_csr'  # Prefix for output files
+
+data, cols, row_ptr = mtx_to_csr(mtx_file_path)
+save_to_txt(data, cols, row_ptr, prefix)
