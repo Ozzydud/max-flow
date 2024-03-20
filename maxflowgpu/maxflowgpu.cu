@@ -63,23 +63,27 @@ __global__ void augmentPath(int *residual, int *parent, int *flow,
     }
 }
 
-int fordFulkersonCuda(int *d_graph, int source, int sink){
-    int *graph, *residual, *parent, *flow;
+int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
+    int *d_row, d_indices, d_data, *residual, *parent, *flow;
     int vertices = 5; // Find the amount of data points for allocation
     bool *visited;
     int *queue;
 
     // Allocate all the memory
-    cudaMalloc(&graph, vertices * sizeof(int));
+    cudaMalloc(&d_row, vertices * sizeof(int));
+    cudaMalloc(&d_indices, vertices * sizeof(int));
+    cudaMalloc(&d_data, vertices * sizeof(int));
     cudaMalloc(&residual, vertices * sizeof(int)); // Same as above - we need to find out how much memory to allocate
     cudaMalloc(&parent, vertices * sizeof(int));
     cudaMalloc(&flow, vertices * sizeof(int));
     cudaMalloc(&visited, vertices * sizeof(bool));
-    cudaMalloc(&queue, vertives * sizeof(int));
+    cudaMalloc(&queue, vertices * sizeof(int));
 
     // Copy memory to device
-    cudaMemcpy(graph, d_graph, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(residual, d_graph, vertices * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_row, row, vertices * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_indices, indices, vertices * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_data, data, vertices * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(residual, d_row, vertices * sizeof(int), cudaMemcpyHostToDevice);
 
     // Initialize arrays
     cudaMemset(parent, -1, vertices * sizeof(int));
@@ -89,22 +93,24 @@ int fordFulkersonCuda(int *d_graph, int source, int sink){
     int block_size = 256; //probably not correct
     int num_blocks = (vertices + block_size - 1) / block_size;
 
-    cuda_bfs<<<num_blocks, block_size>>>(graph, residual, visited, parent, queue, flow, vertices, source, sink);
+    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, residual, visited, parent, queue, flow, source, sink);
 
-    cuda_augment<<<num_blocks, block_size>>>(residual, parent, flow, vertices, source, sink);
+    augmentPath<<<num_blocks, block_size>>>(residual, parent, flow, source, sink);
 
     int max_flow;
     cudaMemcpy(&max_flow, &flow[sink], sizeof(int), cudaMemcpyDeviceToHost);
 
     // Free device memory
-    cudaFree(graph);
+    cudaFree(d_row);
+    cudaFree(d_indices);
+    cudaFree(d_data);
     cudaFree(residual);
     cudaFree(parent);
     cudaFree(flow);
     cudaFree(visited);
     cudaFree(queue);
 
-    return maxflow;
+    return max_flow;
 }
 
 
