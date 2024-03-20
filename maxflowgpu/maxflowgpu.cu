@@ -70,8 +70,8 @@ int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
     int *queue;
 
     // Allocate all the memory
-    cudaMalloc(&d_row, vertices * sizeof(int*));
-    cudaMalloc(&d_indices, vertices * sizeof(int*));
+    cudaMalloc(&d_row, vertices * sizeof(int));
+    cudaMalloc(&d_indices, vertices * sizeof(int));
     cudaMalloc(&d_data, vertices * sizeof(int));
     cudaMalloc(&residual, vertices * sizeof(int)); // Same as above - we need to find out how much memory to allocate
     cudaMalloc(&parent, vertices * sizeof(int));
