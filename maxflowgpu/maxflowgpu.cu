@@ -22,7 +22,7 @@ __global__ void cudaBFS (std::vector<int> row, std::vector<int> indices, std::ve
 
      while (!visited[sink] && !visited[source]) { //We keep going as long as we have not visited both sink and source
         for(int v = 0; v<vertices; v++){
-            if(!visited[v] && d_residual[tid * vertices + v] > 0){
+            if(!visited[v] && residual[tid * vertices + v] > 0){
                 // Process neighboring vertices
                     queue[v] = tid;
                     visited[v] = true;
@@ -36,7 +36,7 @@ __global__ void cudaBFS (std::vector<int> row, std::vector<int> indices, std::ve
 
 
 int main() {
-    cout << "no errors plz";
+    std::cout << "no errors plz";
     return 0;
 
 }
