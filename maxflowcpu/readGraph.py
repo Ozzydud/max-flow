@@ -87,3 +87,16 @@ def mtx_to_csr_and_save(mtx_file_path, output_prefix):
 mtx_file_path = 'data/cage3.mtx'
 output_prefix = 'data/csrgre_1107.mtx'
 mtx_to_csr_and_save(mtx_file_path, output_prefix)
+
+def npy_to_txt(npy_file_path, txt_file_path):
+    array = np.load(npy_file_path)
+    np.savetxt(txt_file_path, array, fmt='%f')
+
+csr_row_ptr_path = 'data/csrgre_1107.mtx_csr_row_ptr.npy'
+col_indices_path = 'data/csrgre_1107.mtx_col_indices.npy'
+data_path = 'data/csrgre_1107.mtx_data.npy'
+
+# Convert each CSR component
+npy_to_txt('data/csrgre_1107.mtx_csr_row_ptr.npy', 'data/csr_row_ptr.txt')
+npy_to_txt('data/csrgre_1107.mtx_col_indices.npy', 'data/col_indices.txt')
+npy_to_txt('data/csrgre_1107.mtx_data.npy', 'data/data.txt')
