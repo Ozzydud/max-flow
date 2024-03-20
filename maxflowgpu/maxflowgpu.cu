@@ -7,7 +7,7 @@
 #include <device_launch_parameters.h>
 
 
-__global__ void cudaBFS (std::vector<int> row, std::vector<int> indices, std::vector<int> data,
+__global__ void cudaBFS (const vector<int>& row, const vector<int>& indices, const vector<int>& data,
                          int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited){
     int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
     int vertices = row.size()-1;
