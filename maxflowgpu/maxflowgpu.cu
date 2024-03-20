@@ -9,7 +9,7 @@
 using namespace std;
 
 // BFS
-__global__ void cudaBFS (std::vector<int>& row, std::vector<int>& indices, std::vector<int>& data,
+__global__ void cudaBFS (int *row, int *indices, int *data,
                          int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited){
     int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
     int vertices = 5;
@@ -22,7 +22,7 @@ __global__ void cudaBFS (std::vector<int>& row, std::vector<int>& indices, std::
      __syncthreads(); // Not optimal - we need to wait for all threads before we do BFS
 
      while (!visited[sink] && !visited[source]) { //We keep going as long as we have not visited both sink and source
-        for (int i = row[tid]; i < row[tid + 1]; ++i) {
+            for (int i = row[tid]; i < row[tid + 1]; ++i) {
             int v = indices[i]; // Get the destination vertex
             if (!visited[v] && residual[i] > 0) {
                 // Process neighboring vertices
@@ -40,7 +40,7 @@ __global__ void cudaBFS (std::vector<int>& row, std::vector<int>& indices, std::
 __global__ void augmentPath(int *residual, int *parent, int *flow, 
                             int vertices, int source, int sink){
     int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
-
+    
 }
 
 
