@@ -12,9 +12,10 @@
 __global__ void cudaBFS (int *row, int *indices, int *data,
                          int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited, int vertices){
     int tid = blockIdx.x * blockDim.x + threadIdx.x; //Finding thread ID
+    std::cout << "The maximum possible flow is " << tid << std::endl;
     if(visited[tid] == false && vertices > tid){ //Mark as visited and add tid to the queue
         queue[tid] = tid;
-        visited[tid] = true;
+        visited[tid] = 1;
         parent[tid] = -1;
     }
 
@@ -27,7 +28,7 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
             if (!visited[v] && data[i] > 0) {
                 // Process neighboring vertices
                     queue[v] = tid;
-                    visited[v] = true;
+                    visited[v] = 1;
                     parent[v] = tid;
             }
         }
@@ -142,7 +143,7 @@ int main() {
     int *d_data = &data[0];
 
     int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
-    std::cout << "The maximum possible flow is " << d_data[0] << std::endl;
+    std::cout << "The maximum possible flow is " << d_data[1] << std::endl;
 
     return 0;
 }
