@@ -11,7 +11,7 @@
 // BFS
 __global__ void cudaBFS (int *row, int *indices, int *data,
                          int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited, int vertices){
-    int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
+    int tid = blockIdx.x * blockDim.x + threadIdx.x; //Finding thread ID
     if(visited[tid] == false && vertices > tid){ //Mark as visited and add tid to the queue
         queue[tid] = tid;
         visited[tid] = true;
@@ -37,24 +37,23 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
 }
 
 //AUGMENTED PATHS
-__global__ void augmentPath(int *data, int *parent, int *flow, 
-                            int source, int sink, int vertices){
-    int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
-    if(tid<vertices && parent[tid] != -1){ //if == -1, it was not reached in BFS
+__global__ void augmentPath(int *data, int *parent, int *flow,
+                            int source, int sink, int vertices) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (tid < vertices && parent[tid] != -1) {
         int min_flow = INF;
         int current = tid;
         while (current != source) {
             int current_parent = parent[current];
-            // Needs changing to follow data structure
-            min_flow = min(min_flow, data[current_parent]);
+            min_flow = min(min_flow, data[current_parent * vertices + current]);
             current = current_parent;
         }
 
         current = tid;
-        while(current != source){
+        while (current != source) {
             int current_parent = parent[current];
-            data[current_parent] -= min_flow;
-            data[current_parent] += min_flow;
+            data[current_parent * vertices + current] -= min_flow;
+            data[current * vertices + current_parent] += min_flow; // Update residual
             current = current_parent;
         }
         flow[tid] += min_flow;
