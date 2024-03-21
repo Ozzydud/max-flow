@@ -53,8 +53,8 @@ __global__ void augmentPath(int *data, int *parent, int *flow,
         current = tid;
         while(current != source){
             int current_parent = parent[current];
-            residual[current_parent] -= min_flow;
-            residual[current_parent] += min_flow;
+            data[current_parent] -= min_flow;
+            data[current_parent] += min_flow;
             current = current_parent;
         }
         flow[tid] += min_flow;
