@@ -114,8 +114,40 @@ int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
 }
 
 
-int main() {
-    std::cout << "no errors plz";
-    return 0;
+template <typename T>
+std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor) {
+    std::vector<T> values;
+    std::ifstream file(filePath);
+    float value;
+    while (file >> value) {
+        // Scale, round, and then convert to integer
+        int scaledValue = static_cast<int>(round(value * scaleFactor));
+        values.push_back(scaledValue);
+    }
+    return values;
+}
 
+
+int main() {
+    std::string csrRowPtr_file = "output_csr_row_ptr.txt";
+    std::string colIndices_file = "output_csr_col_indices.txt";
+    std::string data_file = "output_csr_data.txt";
+
+    std::vector<int> csrRowPtr = readVectorFromFile<int>(csrRowPtr_file);
+    std::vector<int> colIndices = readVectorFromFile<int>(colIndices_file);
+    std::vector<int> data = readVectorFromFile<int>(data_file);
+
+    int V = csrRowPtr.size() - 1; // Number of vertices
+    int s = 0; // Source
+    int t = 1; // Sink
+
+    // Convert vectors to pointers
+    int *d_csrRowPtr = &csrRowPtr[0];
+    int *d_colIndices = &colIndices[0];
+    int *d_data = &data[0];
+
+    int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t);
+    std::cout << "The maximum possible flow is " << max_flow << std::endl;
+
+    return 0;
 }
