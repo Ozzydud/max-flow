@@ -134,7 +134,7 @@ int main() {
 
     int V = csrRowPtr.size() - 1; // Number of vertices
     int s = 0; // Source
-    int t = 1; // Sink
+    int t = 5; // Sink
 
     // Convert vectors to pointers
     int *d_csrRowPtr = &csrRowPtr[0];
@@ -142,7 +142,7 @@ int main() {
     int *d_data = &data[0];
 
     int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
-    std::cout << "The maximum possible flow is " << max_flow << std::endl;
+    std::cout << "The maximum possible flow is " << d_data[0] << std::endl;
 
     return 0;
 }
