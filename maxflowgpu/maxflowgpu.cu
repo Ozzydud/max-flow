@@ -93,7 +93,7 @@ int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
     int block_size = 256; //probably not correct
     int num_blocks = (vertices + block_size - 1) / block_size;
 
-    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, residual, visited, parent, queue, flow, source, sink);
+    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, source, sink, parent, queue, flow, residual, visited);
 
     augmentPath<<<num_blocks, block_size>>>(residual, parent, flow, source, sink);
 
