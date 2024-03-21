@@ -30,7 +30,6 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
          __syncthreads();
      }
 
-}
 
 //AUGMENTED PATHS
 __global__ void augmentPath(int *data, int *parent, int *flow,
