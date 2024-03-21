@@ -37,7 +37,7 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
 }
 
 //AUGMENTED PATHS
-__global__ void augmentPath(int *residual, int *parent, int *flow, 
+__global__ void augmentPath(int *data, int *parent, int *flow, 
                             int source, int sink, int vertices){
     int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
     if(tid<vertices && parent[tid] != -1){ //if == -1, it was not reached in BFS
