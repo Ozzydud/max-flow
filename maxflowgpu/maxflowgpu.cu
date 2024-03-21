@@ -12,7 +12,6 @@
 __global__ void cudaBFS (int *row, int *indices, int *data,
                          int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited, int vertices){
     int tid = blockIdx.x * blockDim.x + threadIdx.x; //Finding thread ID
-    printf("asgasgasg %d\n", tid);
     if(visited[tid] == false && vertices > tid){ //Mark as visited and add tid to the queue
         queue[tid] = tid;
         visited[tid] = 1;
@@ -20,7 +19,7 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
     }
 
      __syncthreads(); // Not optimal - we need to wait for all threads before we do BFS
-
+     printf("hehe %d/n", visited[sink])
      while (!visited[sink] && !visited[source]) { //We keep going as long as we have not visited both sink and source
             // Needs changing to fit with our data ---- ALL OF THE BELOW
             for (int i = row[tid]; i < row[tid + 1]; i++) {
@@ -143,7 +142,7 @@ int main() {
     int *d_data = &data[0];
 
     int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
-    std::cout << "The maximum possible flow is " << d_data[1] << std::endl;
+    std::cout << "The maximum possible flow is " << max_flow << std::endl;
 
     return 0;
 }
