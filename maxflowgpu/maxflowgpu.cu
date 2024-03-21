@@ -129,6 +129,7 @@ std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor
 
 
 int main() {
+    float scaleFactor = 1000.0f;
     std::vector<int> data = readVectorFromFile<int>("output_csr_data.txt", scaleFactor);
     std::vector<int> colIndices = readVectorFromFile<int>("output_csr_col_indices.txt", 1);
     std::vector<int> csrRowPtr = readVectorFromFile<int>("output_csr_row_ptr.txt", 1);
