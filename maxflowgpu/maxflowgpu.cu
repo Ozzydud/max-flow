@@ -19,8 +19,8 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
     }
 
      __syncthreads(); // Not optimal - we need to wait for all threads before we do BFS
-     printf("hehe %d\n", visited[source]);
      while (!visited[sink] && !visited[source]) { //We keep going as long as we have not visited both sink and source
+            printf("test");
             // Needs changing to fit with our data ---- ALL OF THE BELOW
             for (int i = row[tid]; i < row[tid + 1]; i++) {
             int v = indices[i]; // Get the destination vertex
