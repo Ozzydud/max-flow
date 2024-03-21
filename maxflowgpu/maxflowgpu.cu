@@ -22,9 +22,9 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
 
      while (!visited[sink] && !visited[source]) { //We keep going as long as we have not visited both sink and source
             // Needs changing to fit with our data ---- ALL OF THE BELOW
-            for (int i = row[tid]; i < row[tid + 1]; ++i) {
+            for (int i = row[tid]; i < row[tid + 1]; i++) {
             int v = indices[i]; // Get the destination vertex
-            if (!visited[v] && residual[i] > 0) {
+            if (!visited[v] && data[i] > 0) {
                 // Process neighboring vertices
                     queue[v] = tid;
                     visited[v] = true;
@@ -46,15 +46,15 @@ __global__ void augmentPath(int *residual, int *parent, int *flow,
         while (current != source) {
             int current_parent = parent[current];
             // Needs changing to follow data structure
-            min_flow = min(min_flow, residual[current_parent * vertices + current]);
+            min_flow = min(min_flow, data[current_parent]);
             current = current_parent;
         }
 
         current = tid;
         while(current != source){
             int current_parent = parent[current];
-            residual[current_parent * vertices + current] -= min_flow;
-            residual[current * vertices + current_parent] += min_flow;
+            residual[current_parent] -= min_flow;
+            residual[current_parent] += min_flow;
             current = current_parent;
         }
         flow[tid] += min_flow;
