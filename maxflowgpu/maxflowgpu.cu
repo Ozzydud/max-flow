@@ -88,7 +88,7 @@ int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
     // Initialize arrays
     cudaMemset(parent, -1, vertices * sizeof(int));
     cudaMemset(flow, 0, vertices * sizeof(int));
-    cudaMemset(visited, false, vertices * sizeof(bool));
+    cudaMemset(visited, 0, vertices * sizeof(bool));
 
     int block_size = 256; //probably not correct
     int num_blocks = (vertices + block_size - 1) / block_size;
