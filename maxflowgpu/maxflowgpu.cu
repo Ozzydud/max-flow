@@ -131,7 +131,7 @@ int main() {
     std::vector<int> csrRowPtr = readVectorFromFile<int>("output_csr_row_ptr.txt", 1);
 
 
-    int V = 5//csrRowPtr.size() - 1; // Number of vertices
+    int V = 5;//csrRowPtr.size() - 1; // Number of vertices
     int s = 0; // Source
     int t = 5; // Sink
 
