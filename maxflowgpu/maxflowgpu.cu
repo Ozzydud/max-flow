@@ -12,11 +12,11 @@
 __global__ void cudaBFS (int *row, int *indices, int *data,
                          int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited, int vertices){
     int tid = blockIdx.x * blockDim.x + threadIdx.x; //Finding thread ID
-    if(visited[tid] == false && vertices > tid){ //Mark as visited and add tid to the queue
-        queue[tid] = tid;
-        visited[tid] = 1;
-        parent[tid] = -1;
-    }
+     //Mark as visited and add tid to the queue
+    queue[source] = source;
+    visited[source] = 1;
+    parent[source] = -1;
+    
             // Needs changing to fit with our data ---- ALL OF THE BELOW
         for (int i = row[tid]; i < row[tid + 1]; i++) {
             int v = indices[i]; // Get the destination vertex
@@ -40,15 +40,15 @@ __global__ void augmentPath(int *data, int *parent, int *flow,
         int current = tid;
         while (current != source) {
             int current_parent = parent[current];
-            min_flow = min(min_flow, data[current_parent * vertices + current]);
+            min_flow = min(min_flow, data[current_parent]);
             current = current_parent;
         }
 
         current = tid;
         while (current != source) {
             int current_parent = parent[current];
-            data[current_parent * vertices + current] -= min_flow;
-            data[current * vertices + current_parent] += min_flow; // Update residual
+            data[current_parent] -= min_flow;
+            data[current] += min_flow; // Update residual
             current = current_parent;
         }
         flow[tid] += min_flow;
