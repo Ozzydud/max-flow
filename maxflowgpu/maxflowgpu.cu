@@ -129,13 +129,10 @@ std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor
 
 
 int main() {
-    std::string csrRowPtr_file = "output_csr_row_ptr.txt";
-    std::string colIndices_file = "output_csr_col_indices.txt";
-    std::string data_file = "output_csr_data.txt";
+    std::vector<int> data = readVectorFromFile<int>("output_csr_data.txt", scaleFactor);
+    std::vector<int> colIndices = readVectorFromFile<int>("output_csr_col_indices.txt", 1);
+    std::vector<int> csrRowPtr = readVectorFromFile<int>("output_csr_row_ptr.txt", 1);
 
-    std::vector<int> csrRowPtr = readVectorFromFile<int>(csrRowPtr_file);
-    std::vector<int> colIndices = readVectorFromFile<int>(colIndices_file);
-    std::vector<int> data = readVectorFromFile<int>(data_file);
 
     int V = csrRowPtr.size() - 1; // Number of vertices
     int s = 0; // Source
