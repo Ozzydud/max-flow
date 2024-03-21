@@ -10,9 +10,8 @@
 
 // BFS
 __global__ void cudaBFS (int *row, int *indices, int *data,
-                         int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited){
+                         int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited, int vertices){
     int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
-    int vertices = 5;
     if(visited[tid] == false && vertices > tid){ //Mark as visited and add tid to the queue
         queue[tid] = tid;
         visited[tid] = true;
@@ -39,9 +38,8 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
 
 //AUGMENTED PATHS
 __global__ void augmentPath(int *residual, int *parent, int *flow, 
-                            int source, int sink){
+                            int source, int sink, int vertices){
     int tid = blockIdx.x * blockDim.x * threadIdx.x; //Finding thread ID
-    int vertices = 5;
     if(tid<vertices && parent[tid] != -1){ //if == -1, it was not reached in BFS
         int min_flow = INF;
         int current = tid;
@@ -63,9 +61,8 @@ __global__ void augmentPath(int *residual, int *parent, int *flow,
     }
 }
 
-int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
+int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink, int vertices){
     int *d_row, *d_indices, *d_data, *residual, *parent, *flow;
-    int vertices = 5; // Find the amount of data points for allocation
     bool *visited;
     int *queue;
 
@@ -93,9 +90,9 @@ int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
     int block_size = 256; //probably not correct
     int num_blocks = (vertices + block_size - 1) / block_size;
 
-    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, source, sink, parent, queue, flow, residual, visited);
+    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, source, sink, parent, queue, flow, residual, visited, vertices);
 
-    augmentPath<<<num_blocks, block_size>>>(residual, parent, flow, source, sink);
+    augmentPath<<<num_blocks, block_size>>>(residual, parent, flow, source, sink, vertices);
 
     int max_flow;
     cudaMemcpy(&max_flow, &flow[sink], sizeof(int), cudaMemcpyDeviceToHost);
@@ -130,6 +127,7 @@ std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor
 
 int main() {
     float scaleFactor = 1000.0f;
+
     std::vector<int> data = readVectorFromFile<int>("output_csr_data.txt", scaleFactor);
     std::vector<int> colIndices = readVectorFromFile<int>("output_csr_col_indices.txt", 1);
     std::vector<int> csrRowPtr = readVectorFromFile<int>("output_csr_row_ptr.txt", 1);
@@ -144,7 +142,7 @@ int main() {
     int *d_colIndices = &colIndices[0];
     int *d_data = &data[0];
 
-    int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t);
+    int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
     std::cout << "The maximum possible flow is " << max_flow << std::endl;
 
     return 0;
