@@ -17,17 +17,16 @@ __global__ void cudaBFS (int *row, int *indices, int *data,
         visited[tid] = 1;
         parent[tid] = -1;
     }
-    while (!visited[sink] && !visited[source]) { //We keep going as long as we have not visited both sink and source
             // Needs changing to fit with our data ---- ALL OF THE BELOW
-            for (int i = row[tid]; i < row[tid + 1]; i++) {
+        for (int i = row[tid]; i < row[tid + 1]; i++) {
             int v = indices[i]; // Get the destination vertex
             if (!visited[v] && data[i] > 0) {
                 // Process neighboring vertices
                     queue[v] = tid;
                     visited[v] = 1;
                     parent[v] = tid;
-            }
         }
+    }
          __syncthreads();
      }
 
