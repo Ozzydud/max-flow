@@ -64,7 +64,7 @@ __global__ void augmentPath(int *residual, int *parent, int *flow,
 }
 
 int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink){
-    int *d_row, d_indices, d_data, *residual, *parent, *flow;
+    int *d_row, *d_indices, *d_data, *residual, *parent, *flow;
     int vertices = 5; // Find the amount of data points for allocation
     bool *visited;
     int *queue;
