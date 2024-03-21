@@ -42,6 +42,7 @@ __global__ void augmentPath(int *data, int *parent, int *flow,
             int current_parent = parent[current];
             min_flow = min(min_flow, data[current_parent]);
             current = current_parent;
+            break;
         }
 
         current = tid;
@@ -50,6 +51,7 @@ __global__ void augmentPath(int *data, int *parent, int *flow,
             data[current_parent] -= min_flow;
             data[current] += min_flow; // Update residual
             current = current_parent;
+            break;
         }
         flow[tid] += min_flow;
     }
