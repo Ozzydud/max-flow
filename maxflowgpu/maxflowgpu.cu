@@ -15,7 +15,7 @@ using namespace std;
 #define INF 1e9
 
 
-void readInput(const char* filename, int total_nodes, int* residual_capacity) {
+void readInput(string filename, int total_nodes, int* residual_capacity) {
 
 	ifstream file;
 	file.open(filename);
