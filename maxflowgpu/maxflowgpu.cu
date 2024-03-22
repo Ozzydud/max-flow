@@ -27,23 +27,21 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
     }
 
     string line;
-    u_int source, destination;
+    unsigned int source, destination;
     float capacity;
 
-    while (file) {
-
-        getline(file, line);
-
-        if (line.empty()) {
-            continue;
-        }
+    while (getline(file, line)) {
+        if (line.empty()) continue;
 
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
-        printf("capacity before %f \n", capacity);
-        int scaledCapacity = static_cast<int>(capacity * 1000); // Explicit casting
+
+        cout << "capacity before " << capacity << " \n";
+
+        int scaledCapacity = static_cast<int>(capacity * 1000);
         residual_capacity[source * total_nodes + destination] = scaledCapacity;
-        printf("capacity after %d \n", scaledCapacity); // Use %d for integer
+
+        cout << "capacity after " << residual_capacity[source * total_nodes + destination] << " \n";
     }
 
     file.close();
