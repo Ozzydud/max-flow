@@ -137,12 +137,21 @@ int main() {
 
     int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
     std::cout << "The maximum possible flow is " << max_flow << std::endl; */
+
+
+
+    int total_nodes = 19;
     int *residual;
 
-    // Creating residual graph
-    residual = (int*) malloc(19); 
-    memset(residual, 0, 19);
+    // Allocating memory for a square matrix representing the graph
+    residual = new int[total_nodes * total_nodes];
+    memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
 
-    readInput("cage3.mtx", 19, residual);
+    readInput("cage3.mtx", total_nodes, residual);
+
+    // Remember to free the allocated memory
+    delete[] residual;
+    
+
     return 0;
 }
