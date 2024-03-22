@@ -15,7 +15,7 @@ using namespace std;
 #define INF 1e9
 
 
-void readInput(string filename, int total_nodes, int* residual_capacity) {
+void readInput(const char* filename, int total_nodes, int* residual_capacity) {
 
 	ifstream file;
 	file.open(filename);
@@ -144,6 +144,6 @@ int main() {
     residual = (int*) malloc(19); 
     memset(residual, 0, 19);
 
-    readInput('cage3.mtx', 19, residual);
+    readInput("cage3.mtx", 19, residual);
     return 0;
 }
