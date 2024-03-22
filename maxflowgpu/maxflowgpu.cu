@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include <bits/stdc++.h>
 
@@ -37,12 +38,12 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
             continue;
         }
 
-        std::stringstream linestream(line);
+        stringstream linestream(line);
         linestream >> source >> destination >> capacity;
         printf("capacity before %f \n", capacity);
-        capacity *= 1000;
-        residual_capacity[source * total_nodes + destination] = capacity;
-        printf("capacity after %f \n", capacity);
+        int scaledCapacity = static_cast<int>(capacity * 1000); // Explicit casting
+        residual_capacity[source * total_nodes + destination] = scaledCapacity;
+        printf("capacity after %d \n", scaledCapacity); // Use %d for integer
     }
 
     file.close();
