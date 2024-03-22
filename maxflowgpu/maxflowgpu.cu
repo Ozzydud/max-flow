@@ -8,59 +8,51 @@
 
 #define INF 1e9
 
-// BFS
-__global__ void cudaBFS (int *row, int *indices, int *data,
-                         int source, int sink, int *parent, int *queue, int *flow, int *residual, bool *visited, int vertices){
-    int tid = blockIdx.x * blockDim.x + threadIdx.x; //Finding thread ID
-     //Mark as visited and add tid to the queue
-    queue[source] = source;
-    visited[source] = 1;
-    parent[source] = -1;
-    
-            // Needs changing to fit with our data ---- ALL OF THE BELOW
-        for (int i = row[tid]; i < row[tid + 1]; i++) {
-            int v = indices[i]; // Get the destination vertex
-            if (!visited[v] && data[i] > 0) {
-                // Process neighboring vertices
-                    queue[v] = tid;
-                    visited[v] = 1;
-                    parent[v] = tid;
-        }
+
+void readInput(const char* filename, int total_nodes, int* residual_capacity) {
+
+	ifstream file;
+	file.open(filename);
+
+	if (!file) {
+        cout <<  "Error reading file!";
+        exit(1);
     }
-         __syncthreads();
-     }
 
+    string line;
+    u_int source, destination;
+    u_short capacity;
 
-//AUGMENTED PATHS
-__global__ void augmentPath(int *data, int *parent, int *flow,
-                            int source, int sink, int vertices) {
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-    if (tid < vertices && parent[tid] != -1) {
-        int min_flow = INF;
-        int current = tid;
-        while (current != source) {
-            int current_parent = parent[current];
-            min_flow = min(min_flow, data[current_parent]);
-            current = current_parent;
-            break;
+    while (file) {
+
+        getline(file, line);
+
+        if (line.empty()) {
+            continue;
         }
 
-        current = tid;
-        while (current != source) {
-            int current_parent = parent[current];
-            data[current_parent] -= min_flow;
-            data[current] += min_flow; // Update residual
-            current = current_parent;
-            break;
-        }
-        flow[tid] += min_flow;
+        std::stringstream linestream(line);
+        linestream >> source >> destination >> capacity*1000f;
+        residual_capacity[source * total_nodes + destination] = capacity;
+        printf("capacity after %d \n", capacity);
     }
+
+    file.close();
 }
+
+
+__global__ void cudaBFS(int *row, int *indices, int *capacity, bool *visited, )
 
 int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink, int vertices){
     int *d_row, *d_indices, *d_data, *residual, *parent, *flow;
     bool *visited;
     int *queue;
+    int *residual;
+
+    // Creating residual graph
+    residual = (int*) malloc(vertices); 
+    memset(residual, 0, vertices)
+
 
     // Allocate all the memory
     cudaMalloc(&d_row, vertices * sizeof(int));
@@ -122,7 +114,7 @@ std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor
 
 
 int main() {
-    float scaleFactor = 1000.0f;
+/*     float scaleFactor = 1000.0f;
 
     std::vector<int> data = readVectorFromFile<int>("output_csr_data.txt", scaleFactor);
     std::vector<int> colIndices = readVectorFromFile<int>("output_csr_col_indices.txt", 1);
@@ -139,7 +131,13 @@ int main() {
     int *d_data = &data[0];
 
     int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
-    std::cout << "The maximum possible flow is " << max_flow << std::endl;
+    std::cout << "The maximum possible flow is " << max_flow << std::endl; */
+    int *residual;
 
+    // Creating residual graph
+    residual = (int*) malloc(19); 
+    memset(residual, 0, 19);
+
+    readInput('cage3.mtx', 19, residual);
     return 0;
 }
