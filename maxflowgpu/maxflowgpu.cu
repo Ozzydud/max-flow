@@ -39,10 +39,10 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
 
         std::stringstream linestream(line);
         linestream >> source >> destination >> capacity;
-        printf("capacity before %d \n", capacity);
+        printf("capacity before %f \n", capacity);
         capacity *= 1000;
         residual_capacity[source * total_nodes + destination] = capacity;
-        printf("capacity after %d \n", capacity);
+        printf("capacity after %f \n", capacity);
     }
 
     file.close();
