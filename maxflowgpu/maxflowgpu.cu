@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <string>
 #include <vector>
 
 // CUDA libraries
@@ -41,9 +43,8 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
 }
 
 
-__global__ void cudaBFS(int *row, int *indices, int *capacity, bool *visited, )
 
-int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink, int vertices){
+/* int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink, int vertices){
     int *d_row, *d_indices, *d_data, *residual, *parent, *flow;
     bool *visited;
     int *queue;
@@ -110,7 +111,7 @@ std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor
         values.push_back(scaledValue);
     }
     return values;
-}
+} */
 
 
 int main() {
