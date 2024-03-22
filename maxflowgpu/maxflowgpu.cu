@@ -27,7 +27,7 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
 
     string line;
     u_int source, destination;
-    u_int capacity;
+    float capacity;
 
     while (file) {
 
@@ -39,6 +39,7 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
 
         std::stringstream linestream(line);
         linestream >> source >> destination >> capacity;
+        printf("capacity before %d \n", capacity);
         capacity *= 1000;
         residual_capacity[source * total_nodes + destination] = capacity;
         printf("capacity after %d \n", capacity);
