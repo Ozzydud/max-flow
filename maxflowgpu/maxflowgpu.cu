@@ -47,77 +47,38 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
     file.close();
 }
 
+__global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int sink){
+    int Idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(!frontier[sink] && Idx < vertices && frontier[Idx]){
+
+        frontier[Idx] = false;
+        visited[Idx] = true;
+
+        int *neighbour_parent;
+        int *neighbour_flow;
+        int capacity;
+
+        for (int i = Idx; i<vertices; i++){
+            capacity = r_capacity[Idx * vertices + i];
+
+            if(frontiter[i] || visited[i] || capacity <= 0){
+                continue; // If we have already seen the neighbours and perfomed the iteration on this, we move on
+            }
+
+            frontier[i] = true;
+
+            // maybe otherwise
+            neighbour_parent + i = Idx; 
+            neighbour_flow + i = min(flow[idx], capacity)
+
+        }
 
 
-/* int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink, int vertices){
-    int *d_row, *d_indices, *d_data, *residual, *parent, *flow;
-    bool *visited;
-    int *queue;
-    int *residual;
-
-    // Creating residual graph
-    residual = (int*) malloc(vertices); 
-    memset(residual, 0, vertices)
-
-
-    // Allocate all the memory
-    cudaMalloc(&d_row, vertices * sizeof(int));
-    cudaMalloc(&d_indices, vertices * sizeof(int));
-    cudaMalloc(&d_data, vertices * sizeof(int));
-    cudaMalloc(&residual, vertices * sizeof(int)); // Same as above - we need to find out how much memory to allocate
-    cudaMalloc(&parent, vertices * sizeof(int));
-    cudaMalloc(&flow, vertices * sizeof(int));
-    cudaMalloc(&visited, vertices * sizeof(bool));
-    cudaMalloc(&queue, vertices * sizeof(int));
-
-    // Copy memory to device
-    cudaMemcpy(d_row, row, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_indices, indices, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_data, data, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(residual, d_row, vertices * sizeof(int), cudaMemcpyHostToDevice);
-
-    // Initialize arrays
-    cudaMemset(parent, -1, vertices * sizeof(int));
-    cudaMemset(flow, 0, vertices * sizeof(int));
-    cudaMemset(visited, 0, vertices * sizeof(bool));
-
-    int block_size = 256; //probably not correct
-    int num_blocks = (vertices + block_size - 1) / block_size;
-
-    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, source, sink, parent, queue, flow, residual, visited, vertices);
-
-    augmentPath<<<num_blocks, block_size>>>(residual, parent, flow, source, sink, vertices);
-
-    int max_flow;
-    cudaMemcpy(&max_flow, &flow[sink], sizeof(int), cudaMemcpyDeviceToHost);
-
-    // Free device memory
-    cudaFree(d_row);
-    cudaFree(d_indices);
-    cudaFree(d_data);
-    cudaFree(residual);
-    cudaFree(parent);
-    cudaFree(flow);
-    cudaFree(visited);
-    cudaFree(queue);
-
-    return max_flow;
-}
-
-
-template <typename T>
-std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor) {
-    std::vector<T> values;
-    std::ifstream file(filePath);
-    float value;
-    while (file >> value) {
-        // Scale, round, and then convert to integer
-        int scaledValue = static_cast<int>(round(value * scaleFactor));
-        values.push_back(scaledValue);
+        
     }
-    return values;
-} */
 
+}
 
 int main() {
 /*     float scaleFactor = 1000.0f;
