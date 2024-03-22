@@ -4,9 +4,13 @@
 #include <string>
 #include <vector>
 
+#include <bits/stdc++.h>
+
 // CUDA libraries
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+
+using namespace std;
 
 #define INF 1e9
 
