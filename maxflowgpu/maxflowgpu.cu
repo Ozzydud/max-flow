@@ -42,7 +42,6 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
     residual_capacity[source * total_nodes + destination] = scaledCapacity;
 
     cout << "Residual capacity[" << source << "][" << destination << "]: " << residual_capacity[source * total_nodes + destination] << endl;
-}
     }
 
     file.close();
@@ -72,7 +71,7 @@ int main() {
 
     cout << "test: " << endl;
     // Allocating memory for a square matrix representing the graph
-    residual = new int[total_nodes * total_nodes];
+    residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
     cout << "test01: " << endl;
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
     cout << "test02: " << endl;
