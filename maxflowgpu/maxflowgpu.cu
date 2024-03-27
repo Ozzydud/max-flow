@@ -69,7 +69,7 @@ int main() {
     int total_nodes = 5; // Assuming 5 nodes
     int* residual;
 
-    cout << "test: " << r_capacity << endl;
+    cout << "test: " << endl;
     // Allocating memory for a square matrix representing the graph
     residual = new int[total_nodes * total_nodes];
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
@@ -93,7 +93,7 @@ int main() {
     int* d_r_capacity, * d_parent, * d_flow;
     bool* frontier, * visited;
 
-    cout << "test2: " << r_capacity << endl;
+    cout << "test2: " << endl;
 
     // Allocate memory on device
     cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
@@ -102,7 +102,7 @@ int main() {
     cudaMalloc((void**)&frontier, total_nodes * sizeof(bool));
     cudaMalloc((void**)&visited, total_nodes * sizeof(bool));
 
-    cout << "test3: " << r_capacity << endl;
+    cout << "test3: " << d_r_capacity << endl;
 
     // Copy data from host to device
     cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
@@ -111,7 +111,7 @@ int main() {
     cudaMemset(frontier, 0, total_nodes * sizeof(bool)); // Initialize to false
     cudaMemset(visited, 0, total_nodes * sizeof(bool)); // Initialize to false
 
-    cout << "test4: " << r_capacity << endl;
+    cout << "test4: " << d_r_capacity << endl;
 
     bool sink_reachable = true;
     int max_flow = 0;
@@ -119,7 +119,7 @@ int main() {
     while (sink_reachable) {
         sink_reachable = false;
 
-        cout << "test5: " << r_capacity << endl;
+        cout << "test5: " << d_r_capacity << endl;
 
         // Initialize frontier array (only the source node is in the frontier)
         cudaMemset(frontier + source, 0, sizeof(bool));
@@ -133,21 +133,21 @@ int main() {
 
         int block_size = 256;
         int grid_size = (total_nodes + block_size - 1) / block_size;
-        cout << "test6: " << r_capacity << endl;
+        cout << "test6: " << d_r_capacity << endl;
         // Launch BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, frontier, visited, total_nodes, sink);
         cudaDeviceSynchronize();
-        cout << "test7: " << r_capacity << endl;
+        cout << "test7: " << d_r_capacity << endl;
 
         // Check if sink is reachable
         cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
 
-        cout << "test8: " << r_capacity << endl;
+        cout << "test8: " << d_r_capacity << endl;
 
         if (sink_reachable) {
             int path_flow = INF;
 
-            cout << "test9: " << r_capacity << endl;
+            cout << "test9: " << d_r_capacity << endl;
 
             // Calculate path flow
             for (int v = sink; v != source; v = parent[v]) {
