@@ -69,7 +69,7 @@ int fordFulkersonCuda(int* r_capacity, int* parent, int* flow, int source, int s
     int max_flow = 0;
 
     bool* visited, *frontier;
-    int* d_r_capacity, *d_parent, *d_flow
+    int* d_r_capacity, *d_parent, *d_flow;
     // allocate memory
     cudaMalloc((void**)&d_r_capacity, vertices * vertices * sizeof(int));
     cudaMalloc((void**)&d_parent, vertices * sizeof(int));
