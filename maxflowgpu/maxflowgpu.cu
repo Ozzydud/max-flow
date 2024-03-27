@@ -36,12 +36,12 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-        cout << "capacity before " << capacity << " \n";
+    cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
-        int scaledCapacity = static_cast<int>(capacity * 1000);
-        residual_capacity[source * total_nodes + destination] = scaledCapacity;
+    int scaledCapacity = static_cast<int>(capacity * 1000);
+    residual_capacity[source * total_nodes + destination] = scaledCapacity;
 
-        cout << "capacity after " << residual_capacity[source * total_nodes + destination] << " \n";
+    cout << "Residual capacity[" << source << "][" << destination << "]: " << residual_capacity[source * total_nodes + destination] << endl;
     }
 
     file.close();
