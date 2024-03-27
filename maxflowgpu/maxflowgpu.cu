@@ -66,7 +66,7 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
 
 
 int main() {
-    int total_nodes = 5;
+    int total_nodes = 5; // Assuming 5 nodes
     int* residual;
 
     // Allocating memory for a square matrix representing the graph
@@ -103,8 +103,8 @@ int main() {
     cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemset(frontier, 0, total_nodes * sizeof(bool));
-    cudaMemset(visited, 0, total_nodes * sizeof(bool));
+    cudaMemset(frontier, 0, total_nodes * sizeof(bool)); // Initialize to false
+    cudaMemset(visited, 0, total_nodes * sizeof(bool)); // Initialize to false
 
     bool sink_reachable = true;
     int max_flow = 0;
@@ -112,9 +112,14 @@ int main() {
     while (sink_reachable) {
         sink_reachable = false;
 
-        // Initialize frontier, visited, parent, and flow arrays
+        // Initialize frontier array (only the source node is in the frontier)
+        cudaMemset(frontier + source, 0, sizeof(bool));
         cudaMemcpy(frontier + source, &d_flow[source], sizeof(bool), cudaMemcpyDeviceToDevice);
-        cudaMemcpy(visited + source, &d_flow[source], sizeof(bool), cudaMemcpyDeviceToDevice);
+        
+        // Initialize visited array (all nodes are not visited)
+        cudaMemset(visited, 0, total_nodes * sizeof(bool));
+
+        // Initialize parent array to -1
         cudaMemset(d_parent, -1, total_nodes * sizeof(int));
 
         int block_size = 256;
