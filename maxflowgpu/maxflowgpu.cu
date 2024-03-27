@@ -16,13 +16,13 @@ using namespace std;
 #define INF 1e9
 
 
-void readInput(const char* filename, int total_nodes, int* residual_capacity) {
+void readInput(const char* filename, int total_nodes, int** residual_capacity) {
 
-	ifstream file;
-	file.open(filename);
+    ifstream file;
+    file.open(filename);
 
-	if (!file) {
-        cout <<  "Error reading file!";
+    if (!file) {
+        cout << "Error reading file!";
         exit(1);
     }
 
@@ -30,23 +30,30 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
     unsigned int source, destination;
     float capacity;
 
+    // Initialize the residual_capacity matrix
+    for (int i = 0; i < total_nodes; ++i) {
+        residual_capacity[i] = new int[total_nodes];
+        for (int j = 0; j < total_nodes; ++j) {
+            residual_capacity[i][j] = 0; // Initialize all capacities to 0
+        }
+    }
+
     while (getline(file, line)) {
         if (line.empty()) continue;
 
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-    cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
+        cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
-    int scaledCapacity = static_cast<int>(capacity * 1000);
-    residual_capacity[source * total_nodes + destination] = scaledCapacity;
+        int scaledCapacity = static_cast<int>(capacity * 1000);
+        residual_capacity[source][destination] = scaledCapacity;
 
-    cout << "Residual capacity[" << source << "][" << destination << "]: " << residual_capacity[source * total_nodes + destination] << endl;
+        cout << "Residual capacity[" << source << "][" << destination << "]: " << residual_capacity[source][destination] << endl;
     }
 
     file.close();
 }
-
 __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int sink){
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
