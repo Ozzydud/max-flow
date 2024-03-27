@@ -71,9 +71,9 @@ int main() {
 
     cout << "test: " << endl;
     // Allocating memory for a square matrix representing the graph
-    residual = new int[total_nodes * total_nodes];
+    residual = new int[total_nodes];
     cout << "test01: " << endl;
-    memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
+    memset(residual, 0, sizeof(int) * total_nodes);
     cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
@@ -99,7 +99,7 @@ int main() {
     cout << "test2: " << endl;
 
     // Allocate memory on device
-    cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
+    cudaMalloc((void**)&d_r_capacity, total_nodes * sizeof(int));
     cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
     cudaMalloc((void**)&frontier, total_nodes * sizeof(bool));
@@ -108,7 +108,7 @@ int main() {
     cout << "test3: " << d_r_capacity << endl;
 
     // Copy data from host to device
-    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_r_capacity, residual, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemset(frontier, 0, total_nodes * sizeof(bool)); // Initialize to false
