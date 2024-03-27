@@ -66,7 +66,7 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
 
 
 int main() {
-    int total_nodes = 19;
+    int total_nodes = 5;
     int* residual;
 
     // Allocating memory for a square matrix representing the graph
