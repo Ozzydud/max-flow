@@ -72,9 +72,12 @@ int main() {
     cout << "test: " << endl;
     // Allocating memory for a square matrix representing the graph
     residual = new int[total_nodes * total_nodes];
+    cout << "test01: " << endl;
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
+    cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
+    cout << "test03: " << endl;
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
