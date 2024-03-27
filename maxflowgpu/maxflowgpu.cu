@@ -151,7 +151,7 @@ int main() {
             max_flow += path_flow;
         }
     }
-
+    cout << "Maximum Flow: " << d_r_capacity << endl;
     cout << "Maximum Flow: " << max_flow << endl;
 
     // Clean up allocated memory
