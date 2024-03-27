@@ -65,76 +65,6 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
 }
 
 
-int fordFulkersonCuda(int* r_capacity, int* parent, int* flow, int source, int sink, int vertices){
-    int max_flow = 0;
-
-    bool* visited, *frontier;
-    int* d_r_capacity, *d_parent, *d_flow;
-    // allocate memory
-    cudaMalloc((void**)&d_r_capacity, vertices * vertices * sizeof(int));
-    cudaMalloc((void**)&d_parent, vertices * sizeof(int));
-    cudaMalloc((void**)&d_flow, vertices * sizeof(int));
-    cudaMalloc((void**)&frontier, vertices * sizeof(bool));
-    cudaMalloc((void**)&visited, vertices * sizeof(bool));
-    // host -> device
-    cudaMemcpy(d_r_capacity, r_capacity, vertices * vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_parent, parent, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_flow, flow, vertices * sizeof(int), cudaMemcpyHostToDevice);
-
-    bool sink_reachable = true;
-
-        while (sink_reachable) {
-        sink_reachable = false;
-
-        // Initialize frontier, visited, parent, and flow arrays
-        cudaMemcpy(frontier, &d_flow[source], vertices * sizeof(bool), cudaMemcpyDeviceToDevice);
-        cudaMemcpy(visited, &d_flow[source], vertices * sizeof(bool), cudaMemcpyDeviceToDevice);
-        cudaMemset(d_parent, -1, vertices * sizeof(int));
-
-        while (!sink_reachable) {
-            // Launch BFS kernel
-            int block_size = 256;
-            int grid_size = (vertices + block_size - 1) / block_size;
-            cudaBFS <<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, frontier, visited, vertices, sink);
-            cudaDeviceSynchronize();
-
-            // Check if sink is reachable
-            cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
-
-            if (sink_reachable) {
-                int path_flow = INF;
-
-                // Calculate path flow
-                for (int v = sink; v != source; v = parent[v]) {
-                    int u = parent[v];
-                    path_flow = min(path_flow, r_capacity[u * vertices + v]);
-                }
-
-                // Update residual capacity and flow along the path
-                for (int v = sink; v != source; v = parent[v]) {
-                    int u = parent[v];
-                    r_capacity[u * vertices + v] -= path_flow;
-                    r_capacity[v * vertices + u] += path_flow;
-                }
-
-                max_flow += path_flow;
-            }
-        }
-    }
-    
-    // Copy final flow values back to host
-    cudaMemcpy(flow, d_flow, vertices * sizeof(int), cudaMemcpyDeviceToHost);
-
-    // Free allocated memory on device
-    cudaFree(d_r_capacity);
-    cudaFree(d_parent);
-    cudaFree(d_flow);
-    cudaFree(frontier);
-    cudaFree(visited);
-
-    return max_flow;
-}
-
 int main() {
     int total_nodes = 19;
     int* residual;
@@ -146,7 +76,7 @@ int main() {
     readInput("cage3.mtx", total_nodes, residual);
 
     int source = 0;
-    int sink = 18; // Assuming sink is node 18
+    int sink = total_nodes - 1; // Assuming sink is the last node
 
     int* parent = new int[total_nodes];
     int* flow = new int[total_nodes];
@@ -159,13 +89,75 @@ int main() {
     // Set initial flow from source to 0
     flow[source] = 0;
 
-    int max_flow = fordFulkersonCuda(residual, parent, flow, source, sink, total_nodes);
+    int* d_r_capacity, * d_parent, * d_flow;
+    bool* frontier, * visited;
+
+    // Allocate memory on device
+    cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
+    cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
+    cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
+    cudaMalloc((void**)&frontier, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&visited, total_nodes * sizeof(bool));
+
+    // Copy data from host to device
+    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemset(frontier, 0, total_nodes * sizeof(bool));
+    cudaMemset(visited, 0, total_nodes * sizeof(bool));
+
+    bool sink_reachable = true;
+    int max_flow = 0;
+
+    while (sink_reachable) {
+        sink_reachable = false;
+
+        // Initialize frontier, visited, parent, and flow arrays
+        cudaMemcpy(frontier + source, &d_flow[source], sizeof(bool), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(visited + source, &d_flow[source], sizeof(bool), cudaMemcpyDeviceToDevice);
+        cudaMemset(d_parent, -1, total_nodes * sizeof(int));
+
+        int block_size = 256;
+        int grid_size = (total_nodes + block_size - 1) / block_size;
+
+        // Launch BFS kernel
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, frontier, visited, total_nodes, sink);
+        cudaDeviceSynchronize();
+
+        // Check if sink is reachable
+        cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
+
+        if (sink_reachable) {
+            int path_flow = INF;
+
+            // Calculate path flow
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+                path_flow = min(path_flow, residual[u * total_nodes + v]);
+            }
+
+            // Update residual capacity and flow along the path
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+                residual[u * total_nodes + v] -= path_flow;
+                residual[v * total_nodes + u] += path_flow;
+            }
+
+            max_flow += path_flow;
+        }
+    }
+
     cout << "Maximum Flow: " << max_flow << endl;
 
     // Clean up allocated memory
     delete[] residual;
     delete[] parent;
     delete[] flow;
+    cudaFree(d_r_capacity);
+    cudaFree(d_parent);
+    cudaFree(d_flow);
+    cudaFree(frontier);
+    cudaFree(visited);
 
     return 0;
 }
