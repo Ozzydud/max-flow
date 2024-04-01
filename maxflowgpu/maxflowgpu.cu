@@ -16,7 +16,7 @@ using namespace std;
 #define INF 1e9
 
 
-void readInput(const char* filename, int total_nodes, int* residual_capacity) {
+void readInput(const char* filename, int total_nodes, int* residual) {
 
 	ifstream file;
 	file.open(filename);
@@ -36,12 +36,12 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-    cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
+        cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
-    int scaledCapacity = static_cast<int>(capacity * 1000);
-    residual_capacity[source * total_nodes + destination] = scaledCapacity;
+        int scaledCapacity = static_cast<int>(capacity * 1000);
+        residual[source * total_nodes + destination] = scaledCapacity;
 
-    cout << "Residual capacity[" << source << "][" << destination << "]: " << residual_capacity[source * total_nodes + destination] << endl;
+        cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
     }
     cout << "hehe" << endl;
 
@@ -72,9 +72,9 @@ int main() {
 
     cout << "test: " << endl;
     // Allocating memory for a square matrix representing the graph
-    residual = (int*)malloc(sizeof(int) * total_nodes * 3);
+    residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
     cout << "test01: " << endl;
-    memset(residual, 0, sizeof(int) * total_nodes * 3);
+    memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
     cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
