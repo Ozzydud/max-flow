@@ -58,7 +58,15 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
         frontier[Idx] = false;
         visited[Idx] = true;
 
-        for (int i = 0; i < vertices; i++) {
+        for (int i = Idx; i < vertices; i++) {
+            if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
+                frontier[i] = true;
+                parent[i] = Idx;
+                flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+            }
+        }
+
+        for (int i = 0; i < Idx; i++) {
             if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
                 frontier[i] = true;
                 parent[i] = Idx;
@@ -204,7 +212,7 @@ int main() {
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
 
         cout << "Maximum Flow: " << max_flow << endl;
-        
+
         cout << "test7: " << d_r_capacity << endl;
         
 
