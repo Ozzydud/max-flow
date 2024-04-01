@@ -72,9 +72,9 @@ int main() {
 
     cout << "test: " << endl;
     // Allocating memory for a square matrix representing the graph
-    residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
+    residual = (int*)malloc(sizeof(int) * total_nodes * 3);
     cout << "test01: " << endl;
-    memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
+    memset(residual, 0, sizeof(int) * total_nodes * 3);
     cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
