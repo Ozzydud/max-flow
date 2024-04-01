@@ -202,6 +202,9 @@ int main() {
         cout << "test6: " << d_r_capacity << endl;
         // Launch BFS kernel
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+
+        cout << "Maximum Flow: " << max_flow << endl;
+        
         cout << "test7: " << d_r_capacity << endl;
         
 
