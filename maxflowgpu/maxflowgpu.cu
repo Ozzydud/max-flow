@@ -149,6 +149,7 @@ int main() {
     int grid_size = (total_nodes + block_size - 1) / block_size;
 
     do{
+        cout << "test12: " << d_r_capacity << endl;
         for (int i = 0; i < total_nodes; ++i) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
@@ -161,10 +162,12 @@ int main() {
         visited[i] = false;
         do_change_capacity[i] = false;
     }
+    cout << "test13: " << d_r_capacity << endl;
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+    cout << "test14: " << d_r_capacity << endl;
 
         while(sink_reachable(frontier, total_nodes, sink)){
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink);
