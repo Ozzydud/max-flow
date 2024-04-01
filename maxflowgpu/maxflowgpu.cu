@@ -205,7 +205,7 @@ int main() {
     cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
 
 
-    }while{found_augmenting_path};
+    }while(found_augmenting_path);
     
     cout << "test8: " << d_r_capacity << endl;
 
