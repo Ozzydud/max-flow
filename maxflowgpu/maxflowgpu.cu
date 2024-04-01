@@ -27,7 +27,7 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
     }
 
     string line;
-    unsigned int source, destination;
+    int source, destination;
     float capacity;
 
     while (getline(file, line)) {
