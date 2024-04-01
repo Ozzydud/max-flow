@@ -175,6 +175,7 @@ int main() {
         cout << "test5: " << d_r_capacity << endl;
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        }
 
         found_augmenting_path = frontier[sink];
 
@@ -202,7 +203,7 @@ int main() {
         // Launch BFS kernel
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
         cout << "test7: " << d_r_capacity << endl;
-        }
+        
 
 
     }while(found_augmenting_path);
