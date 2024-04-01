@@ -201,9 +201,6 @@ int main() {
         cout << "test7: " << d_r_capacity << endl;
         }
 
-        // Check if sink is reachable
-    cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
-
 
     }while(found_augmenting_path);
     
