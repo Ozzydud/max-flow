@@ -81,7 +81,7 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 bool sink_reachable(bool* frontier, int total_nodes, int sink){
     for (int i = total_nodes-1; i > -1; --i) {
 		if(frontier[i]){
-			return true;
+			return i == sink;
 		}
 	}
 	return true;
@@ -153,7 +153,7 @@ int main() {
         for (int i = 0; i < total_nodes; ++i) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
-        if(i == 0){
+        if(i == source){
             frontier[i] = true;
         }else{
             frontier[i] = false;
