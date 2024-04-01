@@ -78,7 +78,7 @@ int main() {
     cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
-    cout << "test03: " << endl;
+    cout << residual << endl;
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
@@ -109,7 +109,7 @@ int main() {
     cout << "test3: " << d_r_capacity << endl;
 
     // Copy data from host to device
-    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_r_capacity, residual, total_nodes * 3 * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemset(frontier, 0, total_nodes * sizeof(bool)); // Initialize to false
