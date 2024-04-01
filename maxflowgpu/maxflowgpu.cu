@@ -38,6 +38,9 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
         cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
+        source--;
+        destination--;
+
         int scaledCapacity = static_cast<int>(capacity * 1000);
         residual[source * total_nodes + destination] = scaledCapacity;
 
