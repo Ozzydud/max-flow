@@ -152,6 +152,8 @@ int main() {
 
     // Remember to free the allocated memory
     delete[] residual;
+
+    
     
 
     return 0;
