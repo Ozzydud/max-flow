@@ -81,7 +81,7 @@ int main() {
     cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
-    cout << residual[2] << endl;
+    cout << residual[2*total_nodes+2] << endl;
 
         for (int i = 0; i < total_nodes; ++i) {
         for (int j = 0; j < total_nodes; ++j) {
