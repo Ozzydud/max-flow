@@ -78,7 +78,7 @@ int main() {
     cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
-    cout << residual << endl;
+    cout << residual[0] << endl;
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
