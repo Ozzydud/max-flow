@@ -169,7 +169,7 @@ int main() {
 
         visited[i] = false;
         do_change_capacity[i] = false;
-    }
+        }
     cout << "test13: " << d_r_capacity << endl;
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
@@ -198,8 +198,8 @@ int main() {
         max_flow += path_flow;
 
         for(int i = sink; i != source; i = parent[i]){
-            i--;
 			do_change_capacity[i] = true;
+            i--;
 		}
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
