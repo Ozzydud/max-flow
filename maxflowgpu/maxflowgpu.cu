@@ -169,7 +169,7 @@ int main() {
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
     cout << "test14: " << d_r_capacity << endl;
 
-        while(sink_reachable(frontier, total_nodes, sink)){
+        while(!sink_reachable(frontier, total_nodes, sink)){
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink);
         
         cout << "test5: " << d_r_capacity << endl;
