@@ -154,33 +154,12 @@ int main() {
         cout << "test7: " << d_r_capacity << endl;
 
         // Check if sink is reachable
-        cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
 
-        cout << "test8: " << d_r_capacity << endl;
+    cout << "test8: " << d_r_capacity << endl;
 
-        if (sink_reachable) {
-            int path_flow = INF;
-
-            cout << "test9: " << d_r_capacity << endl;
-
-            // Calculate path flow
-            for (int v = sink; v != source; v = d_parent[v]) {
-                int u = d_parent[v];
-                path_flow = min(path_flow, d_r_capacity[u * total_nodes + v]);
-            }
-
-            // Update residual capacity and flow along the path
-            for (int v = sink; v != source; v = d_parent[v]) {
-                int u = d_parent[v];
-                d_r_capacity[u * total_nodes + v] -= path_flow;
-                d_r_capacity[v * total_nodes + u] += path_flow;
-            }
-
-            max_flow += path_flow;
-        }
-    }
-    cout << "Maximum Flow: " << d_r_capacity << endl;
     cout << "Maximum Flow: " << max_flow << endl;
+    }
 
     // Clean up allocated memory
     delete[] residual;
