@@ -165,15 +165,15 @@ int main() {
 
             // Calculate path flow
             for (int v = sink; v != source; v = d_parent[v]) {
-                int u = parent[v];
-                path_flow = min(path_flow, d_r_residual[u * total_nodes + v]);
+                int u = d_parent[v];
+                path_flow = min(path_flow, d_r_capacity[u * total_nodes + v]);
             }
 
             // Update residual capacity and flow along the path
             for (int v = sink; v != source; v = d_parent[v]) {
                 int u = d_parent[v];
-                d_r_residual[u * total_nodes + v] -= path_flow;
-                d_r_residual[v * total_nodes + u] += path_flow;
+                d_r_capacity[u * total_nodes + v] -= path_flow;
+                d_r_capacity[v * total_nodes + u] += path_flow;
             }
 
             max_flow += path_flow;
