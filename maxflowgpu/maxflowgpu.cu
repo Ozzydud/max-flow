@@ -185,20 +185,20 @@ int main() {
         path_flow = flow[sink];
         max_flow += path_flow;
 
-        for(i = sink; i != source; i = parent[i]){
+        for(int i = sink; i != source; i = parent[i]){
             i--;
 			do_change_capacity[i] = true;
 		}
 
-        cudaMemcpy(d_do_change_capacity, do_change_capacity, vertices_size, cudaMemcpyHostToDevice);
+        cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
 
 
         
         cout << "test6: " << d_r_capacity << endl;
         // Launch BFS kernel
-        cudaAugment_path<<< blocks, threads >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
-        cout << "test7: " << d_r_capacity << endl
+        cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+        cout << "test7: " << d_r_capacity << endl;
         }
 
         // Check if sink is reachable
