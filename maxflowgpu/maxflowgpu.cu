@@ -16,7 +16,7 @@ using namespace std;
 #define INF 1e9
 
 
-void readInput(const char* filename, int total_nodes, int* residual_capacity) {
+void readInput(const char* filename, int total_nodes, int* residual) {
 
 	ifstream file;
 	file.open(filename);
@@ -27,7 +27,7 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
     }
 
     string line;
-    unsigned int source, destination;
+    int source, destination;
     float capacity;
 
     while (getline(file, line)) {
@@ -36,12 +36,15 @@ void readInput(const char* filename, int total_nodes, int* residual_capacity) {
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-        cout << "capacity before " << capacity << " \n";
+        cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
+
+        source--;
+        destination--;
 
         int scaledCapacity = static_cast<int>(capacity * 1000);
-        residual_capacity[source * total_nodes + destination] = scaledCapacity;
+        residual[source * total_nodes + destination] = scaledCapacity;
 
-        cout << "capacity after " << residual_capacity[source * total_nodes + destination] << " \n";
+        cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
     }
 
     file.close();
@@ -145,15 +148,101 @@ int main() {
     int *residual;
 
     // Allocating memory for a square matrix representing the graph
-    residual = new int[total_nodes * total_nodes];
+    residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
+    cout << "test01: " << endl;
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
+    cout << "test02: " << endl;
 
     readInput("cage3.mtx", total_nodes, residual);
+    cout << residual[2*total_nodes+2] << endl;
 
-    // Remember to free the allocated memory
+        for (int i = 0; i < total_nodes; ++i) {
+        for (int j = 0; j < total_nodes; ++j) {
+            cout << residual[i * total_nodes + j] << " ";
+        }
+        cout << endl;
+    }
+
+    int source = 0;
+    int sink = total_nodes - 1; // Assuming sink is the last node
+
+    int* parent = new int[total_nodes];
+    int* flow = new int[total_nodes];
+
+    for (int i = 0; i < total_nodes; ++i) {
+        parent[i] = -1; // Initialize parent array
+        flow[i] = INF;  // Initialize flow array with INF
+    }
+
+    // Set initial flow from source to 0
+    flow[source] = 0;
+
+    int* d_r_capacity, * d_parent, * d_flow;
+    bool* frontier, * visited;
+
+    cout << "test2: " << endl;
+
+    // Allocate memory on device
+    cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
+    cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
+    cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
+    cudaMalloc((void**)&frontier, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&visited, total_nodes * sizeof(bool));
+
+    cout << "test3: " << d_r_capacity << endl;
+
+    // Copy data from host to device
+    cudaMemcpy(d_r_capacity, residual, total_nodes * 3 * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemset(frontier, 0, total_nodes * sizeof(bool)); // Initialize to false
+    cudaMemset(visited, 0, total_nodes * sizeof(bool)); // Initialize to false
+
+    cout << "test4: " << d_r_capacity << endl;
+
+    bool sink_reachable = true;
+    int max_flow = 0;
+
+    while (sink_reachable) {
+        sink_reachable = false;
+
+        cout << "test5: " << d_r_capacity << endl;
+
+        // Initialize frontier array (only the source node is in the frontier)
+        cudaMemset(frontier + source, 0, sizeof(bool));
+        cudaMemcpy(frontier + source, &d_flow[source], sizeof(bool), cudaMemcpyDeviceToDevice);
+        
+        // Initialize visited array (all nodes are not visited)
+        cudaMemset(visited, 0, total_nodes * sizeof(bool));
+
+        // Initialize parent array to -1
+        cudaMemset(d_parent, -1, total_nodes * sizeof(int));
+
+        int block_size = 256;
+        int grid_size = (total_nodes + block_size - 1) / block_size;
+        cout << "test6: " << d_r_capacity << endl;
+        // Launch BFS kernel
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, frontier, visited, total_nodes, sink);
+        cudaDeviceSynchronize();
+        cout << "test7: " << d_r_capacity << endl;
+
+        // Check if sink is reachable
+    cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
+
+    cout << "test8: " << d_r_capacity << endl;
+
+    cout << "Maximum Flow: " << max_flow << endl;
+    }
+
+    // Clean up allocated memory
     delete[] residual;
-
-    
+    delete[] parent;
+    delete[] flow;
+    cudaFree(d_r_capacity);
+    cudaFree(d_parent);
+    cudaFree(d_flow);
+    cudaFree(frontier);
+    cudaFree(visited);
     
 
     return 0;

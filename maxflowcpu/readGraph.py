@@ -92,7 +92,7 @@ def save_to_txt(data, cols, row_ptr, prefix):
     np.savetxt(f'{prefix}_row_ptr.txt', row_ptr, fmt='%d')
 
 # Example usage
-mtx_file_path = 'data/gre_1107.mtx'  # Update this to your file path
+mtx_file_path = 'data/cage3.mtx'  # Update this to your file path
 prefix = 'output_csr'  # Prefix for output files
 
 data, cols, row_ptr = mtx_to_csr(mtx_file_path)
