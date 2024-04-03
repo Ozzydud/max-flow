@@ -13,14 +13,12 @@ using namespace std;
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
 path */
-bool bfs(int rGraph[V][V], int s, int t, int parent[])
+bool bfs(int** rGraph, int s, int t, int parent[])
 {
     // Create a visited array and mark all vertices as not
     // visited
     bool visited[V];
-    cout << "test3" << endl;
     memset(visited, 0, sizeof(visited));
-    cout << "test4" << endl;
 
     // Create a queue, enqueue source vertex and mark source
     // vertex as visited
@@ -167,10 +165,25 @@ int main()
     int total_nodes = V;
     readInput(filename, total_nodes, graph);
 
+    // Convert graph to rGraph
+    int** rGraph = new int*[V];
+    for (int i = 0; i < V; ++i) {
+        rGraph[i] = new int[V];
+        for (int j = 0; j < V; ++j) {
+            rGraph[i][j] = graph[i][j];
+        }
+    }
+
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
     cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
+
+    // Free dynamically allocated memory for rGraph
+    for (int i = 0; i < V; ++i) {
+        delete[] rGraph[i];
+    }
+    delete[] rGraph;
 
     return 0;
 }
