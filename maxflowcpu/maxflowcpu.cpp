@@ -10,7 +10,22 @@
 't' in residual graph. Also fills parent[] to store the
 path */
 
-/*
+
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <climits> // for INT_MAX
+#include <cmath>
+#include <iostream>
+#include <limits.h>
+#include <queue>
+#include <string.h>
+#include <fstream>
+#include <vector>
+#include <iostream>
+using namespace std;
+
+
 bool bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent)
 {
 	// Create a visited array and mark all vertices as not
@@ -124,21 +139,9 @@ int main() {
 		<< fordFulkerson(graph, 0, 2);
 
     return 0;
-}*/
+}
+/* 
 
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <climits> // for INT_MAX
-#include <cmath>
-#include <iostream>
-#include <limits.h>
-#include <queue>
-#include <string.h>
-#include <fstream>
-#include <vector>
-#include <iostream>
-using namespace std;
 
 
 bool bfs(const vector<int>& csrRowPtr, const vector<int>& colIndices, const vector<int>& capacity, int s, int t, vector<int>& parent) {
@@ -222,13 +225,10 @@ std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor
     }
     return values;
 }
-
+ */
 
 int main() {
     // Example graph in CSR format
-    //vector<int> csrRowPtr = {0, 2, 4, 6, 8};
-    //vector<int> colIndices = {1, 2, 0, 3, 1, 3, 0, 2};
-    //vector<int> data = {1000, 1000, 1000, 1000, 1, 1000, 1, 1000};
 	float scaleFactor = 1000.0f;
 
 	std::vector<int> data = readVectorFromFile<int>("output_csr_data.txt", scaleFactor);

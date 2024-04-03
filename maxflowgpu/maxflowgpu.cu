@@ -36,7 +36,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-        cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
+        //cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
         source--;
         destination--;
@@ -44,9 +44,9 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         int scaledCapacity = static_cast<int>(capacity * 1000);
         residual[source * total_nodes + destination] = scaledCapacity;
 
-        cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+        //cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
     }
-    cout << "hehe" << endl;
+    
 
     file.close();
 }
@@ -101,21 +101,14 @@ int main() {
     int total_nodes = 5; // Assuming 5 nodes
     int* residual;
 
-    cout << "test: " << endl;
+
     // Allocating memory for a square matrix representing the graph
     residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
-    cout << "test01: " << endl;
+
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
-    cout << "test02: " << endl;
+
 
     readInput("cage3.mtx", total_nodes, residual);
-    cout << residual[2*total_nodes+2] << endl;
-
-        for (int i = 0; i < total_nodes; ++i) {
-        for (int j = 0; j < total_nodes; ++j) {
-            cout << residual[i * total_nodes + j] << " ";
-        }
-        cout << endl;
     }
 
     int source = 0;
@@ -135,7 +128,6 @@ int main() {
     int* d_r_capacity, * d_parent, * d_flow;
     bool* d_frontier, * d_visited, *d_do_change_capacity;
 
-    cout << "test2: " << endl;
 
     // Allocate memory on device
     cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
@@ -145,11 +137,11 @@ int main() {
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
     cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
 
-    cout << "test3: " << d_r_capacity << endl;
+
 
     // Copy data from host to device
     cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-    cout << "test4: " << d_r_capacity << endl;
+
 
     bool found_augmenting_path;
     int max_flow = 0;
@@ -157,7 +149,7 @@ int main() {
     int grid_size = (total_nodes + block_size - 1) / block_size;
 
     do{
-        cout << "test12: " << d_r_capacity << endl;
+
         for (int i = 0; i < total_nodes; ++i) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
@@ -170,17 +162,17 @@ int main() {
         visited[i] = false;
         do_change_capacity[i] = false;
         }
-    cout << "test13: " << d_r_capacity << endl;
+   
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
-    cout << "test14: " << d_r_capacity << endl;
+   
 
         while(!sink_reachable(frontier, total_nodes, sink)){
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink);
         
-        cout << "test5: " << d_r_capacity << endl;
+        
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
@@ -211,7 +203,6 @@ int main() {
 
     }while(found_augmenting_path);
     
-    cout << "test8: " << d_r_capacity << endl;
 
     cout << "Maximum Flow: " << max_flow << endl;
     
