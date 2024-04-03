@@ -160,7 +160,7 @@ int main()
     readInput(filename, total_nodes, graph);
 
     // Let us consider the source is 0 and sink is 4
-    int source = 0, sink = 4;
+    int source = 0, sink = V-1;
 
     cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
 
