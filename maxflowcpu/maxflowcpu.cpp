@@ -64,7 +64,7 @@ bool bfs(int rGraph[V][V], int s, int t, int parent[])
 int fordFulkerson(int graph[V][V], int s, int t)
 {
     int u, v;
-
+    cout << "test3" << endl;
     // Create a residual graph and fill the residual graph
     // with given capacities in the original graph as
     // residual capacities in residual graph
@@ -75,9 +75,11 @@ int fordFulkerson(int graph[V][V], int s, int t)
     for (u = 0; u < V; u++)
         for (v = 0; v < V; v++)
             rGraph[u][v] = graph[u][v];
-
+            
+    cout << "test4" << endl;
     int parent[V]; // This array is filled by BFS and to
                    // store path
+    cout << "test5" << endl;
 
     int max_flow = 0; // There is no flow initially
 
@@ -89,11 +91,13 @@ int fordFulkerson(int graph[V][V], int s, int t)
         // the path filled by BFS. Or we can say find the
         // maximum flow through the path found.
         int path_flow = INT_MAX;
+        cout << "test6" << endl;
         for (v = t; v != s; v = parent[v])
         {
             u = parent[v];
             path_flow = min(path_flow, rGraph[u][v]);
         }
+        cout << "test7" << endl;
 
         // update residual capacities of the edges and
         // reverse edges along the path
