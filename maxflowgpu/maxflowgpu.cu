@@ -109,7 +109,7 @@ int main() {
 
 
     readInput("cage3.mtx", total_nodes, residual);
-    }
+    
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
