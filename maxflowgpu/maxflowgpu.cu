@@ -216,7 +216,6 @@ int main() {
     cudaFree(d_flow);
     cudaFree(frontier);
     cudaFree(visited);
-    
 
     return 0;
 }

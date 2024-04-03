@@ -111,7 +111,7 @@ int fordFulkerson(int graph[V][V], int s, int t)
 }
 
 // Read input from .mtx file
-void readInput(const char* filename, int total_nodes, int* residual)
+[int][int] readInput(const char* filename, int total_nodes)
 {
     ifstream file;
     file.open(filename);
@@ -159,9 +159,7 @@ int main()
     // Read the graph from .mtx file
     const char* filename = "cage3.mtx";
     int total_nodes = V;
-    int graph[V][V] = {0};
-
-    readInput(filename, total_nodes, *graph);
+    int graph[V][V] = readInput(filename, total_nodes);
 
     // Let us consider the source is 0 and sink is 5
     int source = 0, sink = 5;
