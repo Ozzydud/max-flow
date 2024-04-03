@@ -152,11 +152,7 @@ void readInput(const char* filename, int total_nodes, int graph[V][V])
 int main()
 {
     // Let us create a graph shown in the above example
-    int graph[V][V] = { { 0, 16, 13, 0, 0 },
-                        { 0, 0, 10, 12, 0 },
-                        { 0, 4, 0, 0, 14 },
-                        { 0, 0, 9, 0, 0 },
-                        { 0, 0, 0, 7, 0 } };
+    int graph[V][V] = {};
 
     // Read the graph from .mtx file
     const char* filename = "cage3.mtx";
