@@ -151,7 +151,7 @@ void readInput(const char* filename, int total_nodes, int graph[V][V])
 // Driver program to test above functions
 int main()
 {
-    // Let us create a graph shown in the above example
+    // Let us create a graph shown in the above exampl
     int graph[V][V] = {};
 
     // Read the graph from .mtx file
