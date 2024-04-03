@@ -98,7 +98,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
-    int total_nodes = 5; // Assuming 5 nodes
+    int total_nodes = 1107;
     int* residual;
 
 
@@ -108,7 +108,7 @@ int main() {
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
 
 
-    readInput("cage3.mtx", total_nodes, residual);
+    readInput("data/gre_1107.mtx", total_nodes, residual);
     
 
     int source = 0;

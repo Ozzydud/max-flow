@@ -155,7 +155,7 @@ int main()
     int graph[V][V] = {};
 
     // Read the graph from .mtx file
-    const char* filename = "cage3.mtx";
+    const char* filename = "data/gre_1107.mtx";
     int total_nodes = V;
     readInput(filename, total_nodes, graph);
 
