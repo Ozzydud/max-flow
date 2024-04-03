@@ -18,7 +18,9 @@ bool bfs(int rGraph[V][V], int s, int t, int parent[])
     // Create a visited array and mark all vertices as not
     // visited
     bool visited[V];
+    cout << "test3" << endl;
     memset(visited, 0, sizeof(visited));
+    cout << "test4" << endl;
 
     // Create a queue, enqueue source vertex and mark source
     // vertex as visited
