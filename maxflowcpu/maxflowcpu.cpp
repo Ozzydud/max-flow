@@ -86,7 +86,7 @@ int main() {
     infile.close();
 
     int source = 0; // Source node
-    int sink = 4;   // Sink node
+    int sink = 5;   // Sink node
 
     double maxFlow = fordFulkerson(graph, source, sink);
     cout << "The maximum possible flow is: " << maxFlow << endl;
