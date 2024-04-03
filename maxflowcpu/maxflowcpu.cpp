@@ -111,7 +111,7 @@ int fordFulkerson(int graph[V][V], int s, int t)
 }
 
 // Read input from .mtx file
-[int][int] readInput(const char* filename, int total_nodes)
+void readInput(const char* filename, int total_nodes, int graph[V][V])
 {
     ifstream file;
     file.open(filename);
@@ -140,9 +140,9 @@ int fordFulkerson(int graph[V][V], int s, int t)
         destination--;
 
         int scaledCapacity = static_cast<int>(capacity * 1000);
-        residual[source * total_nodes + destination] = scaledCapacity;
+        graph[source][destination] = scaledCapacity;
 
-        // cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+        // cout << "Graph[" << source << "][" << destination << "]: " << graph[source][destination] << endl;
     }
 
     file.close();
@@ -152,17 +152,19 @@ int fordFulkerson(int graph[V][V], int s, int t)
 int main()
 {
     // Let us create a graph shown in the above example
-    // int graph[V][V] = { { 0, 16, 13, 0, 0, 0 }, { 0, 0, 10, 12, 0, 0 },
-    //                     { 0, 4, 0, 0, 14, 0 }, { 0, 0, 9, 0, 0, 20 },
-    //                     { 0, 0, 0, 7, 0, 4 }, { 0, 0, 0, 0, 0, 0 } };
+    int graph[V][V] = { { 0, 16, 13, 0, 0 },
+                        { 0, 0, 10, 12, 0 },
+                        { 0, 4, 0, 0, 14 },
+                        { 0, 0, 9, 0, 0 },
+                        { 0, 0, 0, 7, 0 } };
 
     // Read the graph from .mtx file
     const char* filename = "cage3.mtx";
     int total_nodes = V;
-    int graph[V][V] = readInput(filename, total_nodes);
+    readInput(filename, total_nodes, graph);
 
-    // Let us consider the source is 0 and sink is 5
-    int source = 0, sink = 5;
+    // Let us consider the source is 0 and sink is 4
+    int source = 0, sink = 4;
 
     cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
 
