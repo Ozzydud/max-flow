@@ -8,7 +8,7 @@
 using namespace std;
 
 // Number of vertices in given graph
-#define V 1107
+#define V 3534
 
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
@@ -160,7 +160,7 @@ int main()
     int graph[V][V] = {};
 
     // Read the graph from .mtx file
-    const char* filename = "data/gre_1107.mtx";
+    const char* filename = "data/cage9.mtx";
     int total_nodes = V;
     readInput(filename, total_nodes, graph);
 
