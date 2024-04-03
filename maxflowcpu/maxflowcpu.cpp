@@ -63,6 +63,7 @@ bool bfs(int rGraph[V][V], int s, int t, int parent[])
 // Returns the maximum flow from s to t in the given graph
 int fordFulkerson(int graph[V][V], int s, int t)
 {
+    cout << "test3241" << endl;
     int u, v;
     cout << "test3" << endl;
     // Create a residual graph and fill the residual graph
@@ -167,8 +168,9 @@ int main()
     readInput(filename, total_nodes, graph);
     cout << "test2" << endl;
     // Let us consider the source is 0 and sink is 4
-    int source = 0, sink = V-1;
 
+    int source = 0, sink = V-1;
+    cout << "test5" << endl;
     cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
 
     return 0;
