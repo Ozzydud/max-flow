@@ -136,6 +136,9 @@ void readInput(const char* filename, int total_nodes, int graph[V][V])
 
         // cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
+        source--;
+        destination--;
+
         int scaledCapacity = static_cast<int>(capacity * 1000);
         graph[source][destination] = scaledCapacity;
 
@@ -153,7 +156,7 @@ int main()
 
     // Read the graph from .mtx file
     const char* filename = "data/gre_1107.mtx";
-    int total_nodes = V+1;
+    int total_nodes = V;
     readInput(filename, total_nodes, graph);
 
     // Let us consider the source is 0 and sink is 4
