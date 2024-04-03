@@ -8,7 +8,7 @@
 using namespace std;
 
 // Number of vertices in given graph
-#define V 5
+#define V 6
 
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
@@ -110,33 +110,58 @@ int fordFulkerson(int graph[V][V], int s, int t)
     return max_flow;
 }
 
+// Read input from .mtx file
+void readInput(const char* filename, int total_nodes, int* residual)
+{
+    ifstream file;
+    file.open(filename);
+
+    if (!file)
+    {
+        cout << "Error reading file!";
+        exit(1);
+    }
+
+    string line;
+    int source, destination;
+    float capacity;
+
+    while (getline(file, line))
+    {
+        if (line.empty())
+            continue;
+
+        stringstream linestream(line);
+        linestream >> source >> destination >> capacity;
+
+        // cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
+
+        source--;
+        destination--;
+
+        int scaledCapacity = static_cast<int>(capacity * 1000);
+        residual[source * total_nodes + destination] = scaledCapacity;
+
+        // cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+    }
+
+    file.close();
+}
+
 // Driver program to test above functions
 int main()
 {
-    // Read the graph from .mtx file
-    ifstream file("cage3.mtx");
-    if (!file.is_open())
-    {
-        cout << "Unable to open file!";
-        return 1;
-    }
+    // Let us create a graph shown in the above example
+    // int graph[V][V] = { { 0, 16, 13, 0, 0, 0 }, { 0, 0, 10, 12, 0, 0 },
+    //                     { 0, 4, 0, 0, 14, 0 }, { 0, 0, 9, 0, 0, 20 },
+    //                     { 0, 0, 0, 7, 0, 4 }, { 0, 0, 0, 0, 0, 0 } };
 
+    // Read the graph from .mtx file
+    const char* filename = "your_graph_file.mtx";
+    int total_nodes = V;
     int graph[V][V] = {0};
 
-    string line;
-    while (getline(file, line))
-    {
-        istringstream iss(line);
-        int from, to;
-        double weight;
-        if (!(iss >> from >> to >> weight))
-        {
-            break;
-        }
-
-        graph[from - 1][to - 1] = weight;
-    }
-    file.close();
+    readInput(filename, total_nodes, *graph);
 
     // Let us consider the source is 0 and sink is 5
     int source = 0, sink = 5;
