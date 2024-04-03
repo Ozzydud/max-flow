@@ -7,6 +7,8 @@
 #include <string>
 using namespace std;
 
+#define INF 1e9
+
 // Returns true if there is a path from source 's' to sink 't' in residual graph.
 // Also fills parent[] to store the path.
 bool bfs(vector<vector<double>>& rGraph, int s, int t, vector<int>& parent) {
@@ -45,7 +47,7 @@ double fordFulkerson(vector<vector<double>>& graph, int s, int t) {
     double maxFlow = 0;
 
     while (bfs(rGraph, s, t, parent)) {
-        double pathFlow = DBL_MAX;
+        double pathFlow = INF;
         for (int v = t; v != s; v = parent[v]) {
             int u = parent[v];
             pathFlow = min(pathFlow, rGraph[u][v]);
@@ -84,7 +86,7 @@ int main() {
     infile.close();
 
     int source = 0; // Source node
-    int sink = 2;   // Sink node
+    int sink = 4;   // Sink node
 
     double maxFlow = fordFulkerson(graph, source, sink);
     cout << "The maximum possible flow is: " << maxFlow << endl;
