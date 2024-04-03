@@ -142,7 +142,7 @@ void readInput(const char* filename, int total_nodes, int graph[V][V])
         int scaledCapacity = static_cast<int>(capacity * 1000);
         graph[source][destination] = scaledCapacity;
 
-        // cout << "Graph[" << source << "][" << destination << "]: " << graph[source][destination] << endl;
+        cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
     }
 
     file.close();
