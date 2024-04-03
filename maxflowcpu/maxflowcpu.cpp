@@ -153,7 +153,7 @@ int main()
 
     // Read the graph from .mtx file
     const char* filename = "data/gre_1107.mtx";
-    int total_nodes = V;
+    int total_nodes = V+1;
     readInput(filename, total_nodes, graph);
 
     // Let us consider the source is 0 and sink is 4
