@@ -148,7 +148,7 @@ int main() {
     cout << "test3: " << d_r_capacity << endl;
 
     // Copy data from host to device
-    cudaMemcpy(d_r_capacity, residual, total_nodes * 3 * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
     cout << "test4: " << d_r_capacity << endl;
 
     bool found_augmenting_path;
