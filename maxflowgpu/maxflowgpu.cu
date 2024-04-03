@@ -10,6 +10,7 @@
 // CUDA libraries
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#include <cuda_runtime_api.h>
 
 using namespace std;
 
@@ -98,8 +99,15 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
-    int total_nodes = 5; // Assuming 5 nodes
+    int total_nodes = 1107; // Assuming 3534 or 1107 nodes
     int* residual;
+    
+    cudaEvent_t start, stop; // Declare start and stop events
+    float milliseconds = 0; // Variable to store elapsed time in milliseconds
+
+    // Initialize CUDA events
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
 
     // Allocating memory for a square matrix representing the graph
@@ -108,7 +116,7 @@ int main() {
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
 
 
-    readInput("cage3.mtx", total_nodes, residual);
+    readInput("data/gre_1107.mtx", total_nodes, residual);
     
 
     int source = 0;
@@ -148,8 +156,9 @@ int main() {
     int block_size = 256;
     int grid_size = (total_nodes + block_size - 1) / block_size;
 
-    do{
+    cudaEventRecord(start);
 
+    do{
         for (int i = 0; i < total_nodes; ++i) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
@@ -203,6 +212,11 @@ int main() {
 
     }while(found_augmenting_path);
     
+    // Record stop time
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
     
@@ -216,7 +230,9 @@ int main() {
     cudaFree(d_flow);
     cudaFree(frontier);
     cudaFree(visited);
-    
+    // Clean up events
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     return 0;
 }
