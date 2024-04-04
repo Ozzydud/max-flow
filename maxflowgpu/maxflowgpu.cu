@@ -208,7 +208,7 @@ int main() {
     }while(found_augmenting_path);
 
     clock_t end = clock(); // Stop timing
-    
+    double duration = double(end - start) / CLOCKS_PER_SEC;
 
     cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
 
