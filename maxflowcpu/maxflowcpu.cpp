@@ -178,7 +178,7 @@ int main()
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
-    cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
+    //cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
     cout << "test3" << endl;
     // Free dynamically allocated memory for rGraph
     for (int i = 0; i < V; ++i) {
