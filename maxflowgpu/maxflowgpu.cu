@@ -98,8 +98,12 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
+
+    clock_t start = clock(); // Start timing
+
     int total_nodes = 1107;
     int* residual;
+    
 
 
     // Allocating memory for a square matrix representing the graph
@@ -202,9 +206,13 @@ int main() {
 
 
     }while(found_augmenting_path);
+
+    clock_t end = clock(); // Stop timing
     
 
-    cout << "Maximum Flow: " << max_flow << endl;
+    cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
+
+    cout << "The maximum possible flow is " << max_flow << endl;
     
 
     // Clean up allocated memory

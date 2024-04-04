@@ -156,6 +156,7 @@ void readInput(const char *filename, int total_nodes, int **graph)
 // Driver program to test above functions
 int main()
 {
+    clock_t start = clock(); // Start timing
 
     // Let us create a graph shown in the above example
     int **graph = new int *[V];
@@ -178,7 +179,7 @@ int main()
     int source = 0, sink = V - 1;
 
     // Timing the fordFulkerson method
-    clock_t start = clock(); // Start timing
+    
     int maxFlow = fordFulkerson(graph, source, sink);
     clock_t end = clock(); // Stop timing
 
