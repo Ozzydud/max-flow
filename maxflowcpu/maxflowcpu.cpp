@@ -156,13 +156,14 @@ void readInput(const char* filename, int total_nodes, int graph[V][V])
 // Driver program to test above functions
 int main()
 {
-    /* cout << "testhehe" << endl;
+     cout << "testhehe" << endl;
     // Let us create a graph shown in the above example
     int graph[V][V] = {};
     cout << "test" << endl;
     // Read the graph from .mtx file
     const char* filename = "data/cage9.mtx";
     int total_nodes = V;
+    /*
     cout << "test0" << endl;
     readInput(filename, total_nodes, graph);
     cout << "test1" << endl;
