@@ -13,7 +13,7 @@ using namespace std;
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
 path */
-bool bfs(int** rGraph, int s, int t, int parent[])
+bool bfs(int **rGraph, int s, int t, int parent[])
 {
     // Create a visited array and mark all vertices as not
     // visited
@@ -58,17 +58,19 @@ bool bfs(int** rGraph, int s, int t, int parent[])
     return false;
 }
 
-int fordFulkerson(int** graph, int s, int t)
+int fordFulkerson(int **graph, int s, int t)
 {
     int u, v;
 
     // Create a residual graph and fill the residual graph
     // with given capacities in the original graph as
     // residual capacities in residual graph
-    int** rGraph = new int*[V];
-    for (u = 0; u < V; u++) {
+    int **rGraph = new int *[V];
+    for (u = 0; u < V; u++)
+    {
         rGraph[u] = new int[V];
-        for (v = 0; v < V; v++) {
+        for (v = 0; v < V; v++)
+        {
             rGraph[u][v] = graph[u][v];
         }
     }
@@ -106,7 +108,8 @@ int fordFulkerson(int** graph, int s, int t)
     }
 
     // Free dynamically allocated memory
-    for (u = 0; u < V; u++) {
+    for (u = 0; u < V; u++)
+    {
         delete[] rGraph[u];
     }
     delete[] rGraph;
@@ -115,9 +118,8 @@ int fordFulkerson(int** graph, int s, int t)
     return max_flow;
 }
 
-
 // Read input from .mtx file
-void readInput(const char* filename, int total_nodes, int** graph)
+void readInput(const char *filename, int total_nodes, int **graph)
 {
     ifstream file;
     file.open(filename);
@@ -140,14 +142,11 @@ void readInput(const char* filename, int total_nodes, int** graph)
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-
         source--;
         destination--;
 
         int scaledCapacity = static_cast<int>(capacity * 1000);
         graph[source][destination] = scaledCapacity;
-
-
     }
 
     file.close();
@@ -156,40 +155,37 @@ void readInput(const char* filename, int total_nodes, int** graph)
 // Driver program to test above functions
 int main()
 {
-     cout << "testhehe" << endl;
+    
     // Let us create a graph shown in the above example
-    int** graph = new int*[V];
-    for (int i = 0; i < V; i++) {
+    int **graph = new int *[V];
+    for (int i = 0; i < V; i++)
+    {
         graph[i] = new int[V];
-        for (int j = 0; j < V; j++) {
+        for (int j = 0; j < V; j++)
+        {
             graph[i][j] = 0; // Initialize with 0 capacity
         }
     }
-    cout << "test" << endl;
-    // Read the graph from .mtx file
-    const char* filename = "data/cage9.mtx";
-    int total_nodes = V;
     
-    cout << "test0" << endl;
-    readInput(filename, total_nodes, graph);
+    // Read the graph from .mtx file
+    const char *filename = "data/cage9.mtx";
+    int total_nodes = V;
 
-    cout << "test1" << endl;
+    
+    readInput(filename, total_nodes, graph);
     // Convert graph to rGraph
-    cout << "test2" << endl;
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
     cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
     cout << "test3" << endl;
     // Free dynamically allocated memory for rGraph
-    for (int i = 0; i < V; ++i) {
+    for (int i = 0; i < V; ++i)
+    {
         delete[] graph[i];
     }
 
-    
     delete[] graph;
-    
-    cout << "test4" << endl;
 
-    return 0; 
+    return 0;
 }
