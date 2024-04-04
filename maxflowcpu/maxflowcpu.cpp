@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <queue>
 #include <string.h>
+#include <ctime> // For timing
 using namespace std;
 
 // Number of vertices in given graph
@@ -155,7 +156,7 @@ void readInput(const char *filename, int total_nodes, int **graph)
 // Driver program to test above functions
 int main()
 {
-    
+
     // Let us create a graph shown in the above example
     int **graph = new int *[V];
     for (int i = 0; i < V; i++)
@@ -166,19 +167,26 @@ int main()
             graph[i][j] = 0; // Initialize with 0 capacity
         }
     }
-    
+
     // Read the graph from .mtx file
     const char *filename = "data/cage9.mtx";
     int total_nodes = V;
 
-    
     readInput(filename, total_nodes, graph);
     // Convert graph to rGraph
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
-    cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
-    cout << "test3" << endl;
+    // Timing the fordFulkerson method
+    clock_t start = clock(); // Start timing
+    int maxFlow = fordFulkerson(graph, source, sink);
+    clock_t end = clock(); // Stop timing
+
+    double duration = double(end - start) / CLOCKS_PER_SEC;
+    cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
+
+    cout << "The maximum possible flow is " << maxFlow << endl;
+
     // Free dynamically allocated memory for rGraph
     for (int i = 0; i < V; ++i)
     {
