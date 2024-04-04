@@ -163,7 +163,7 @@ int main()
     const char* filename = "data/cage9.mtx";
     int total_nodes = V;
     readInput(filename, total_nodes, graph);
-
+    cout << "test1" << endl;
     // Convert graph to rGraph
     int** rGraph = new int*[V];
     for (int i = 0; i < V; ++i) {
@@ -172,17 +172,18 @@ int main()
             rGraph[i][j] = graph[i][j];
         }
     }
-
+    cout << "test2" << endl;
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
     cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
-
+    cout << "test3" << endl;
     // Free dynamically allocated memory for rGraph
     for (int i = 0; i < V; ++i) {
         delete[] rGraph[i];
     }
     delete[] rGraph;
+    cout << "test4" << endl;
 
     return 0;
 }
