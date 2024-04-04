@@ -158,7 +158,7 @@ int main()
 {
      cout << "testhehe" << endl;
     // Let us create a graph shown in the above example
-    int graph[V][V] = {};
+    vector<vector<int>> graph(V, vector<int>(V, 0));
     /*
     cout << "test" << endl;
     // Read the graph from .mtx file
