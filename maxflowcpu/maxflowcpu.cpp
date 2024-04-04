@@ -183,11 +183,11 @@ int main()
     cout << "test3" << endl;
     // Free dynamically allocated memory for rGraph
     for (int i = 0; i < V; ++i) {
-        delete[] rGraph[i];
+        delete[] graph[i];
     }
 
     
-    delete[] rGraph;
+    delete[] graph;
     
     cout << "test4" << endl;
 
