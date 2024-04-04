@@ -58,7 +58,7 @@ bool bfs(int** rGraph, int s, int t, int parent[])
     return false;
 }
 
-int fordFulkerson(vector<vector<int>> graph, int s, int t)
+int fordFulkerson(int** graph, int s, int t)
 {
     int u, v;
 
@@ -117,7 +117,7 @@ int fordFulkerson(vector<vector<int>> graph, int s, int t)
 
 
 // Read input from .mtx file
-void readInput(const char* filename, int total_nodes, vector<vector<int>> graph)
+void readInput(const char* filename, int total_nodes, int** graph)
 {
     ifstream file;
     file.open(filename);
@@ -158,8 +158,13 @@ int main()
 {
      cout << "testhehe" << endl;
     // Let us create a graph shown in the above example
-    vector<vector<int>> graph(V, vector<int>(V, 0));
-    
+    int** graph = new int*[V];
+    for (int i = 0; i < V; i++) {
+        graph[i] = new int[V];
+        for (int j = 0; j < V; j++) {
+            graph[i][j] = 0; // Initialize with 0 capacity
+        }
+    }
     cout << "test" << endl;
     // Read the graph from .mtx file
     const char* filename = "data/cage9.mtx";
@@ -167,15 +172,9 @@ int main()
     
     cout << "test0" << endl;
     readInput(filename, total_nodes, graph);
+
     cout << "test1" << endl;
     // Convert graph to rGraph
-    int** rGraph = new int*[V];
-    for (int i = 0; i < V; ++i) {
-        rGraph[i] = new int[V];
-        for (int j = 0; j < V; ++j) {
-            rGraph[i][j] = graph[i][j];
-        }
-    }
     cout << "test2" << endl;
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
