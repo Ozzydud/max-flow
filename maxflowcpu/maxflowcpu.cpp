@@ -9,11 +9,7 @@
 using namespace std;
 
 // Number of vertices in given graph
-<<<<<<< HEAD
-#define V 5;
-=======
 #define V 1107
->>>>>>> 1bf98f13f144314360ccbd7c34fc065f569dc26d
 
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
@@ -124,11 +120,7 @@ int fordFulkerson(int **graph, int s, int t)
 }
 
 // Read input from .mtx file
-<<<<<<< HEAD
-void readInput(const char* filename, int total_nodes, int* residual)
-=======
 void readInput(const char *filename, int total_nodes, int **graph)
->>>>>>> 1bf98f13f144314360ccbd7c34fc065f569dc26d
 {
     ifstream file;
     file.open(filename);
@@ -180,12 +172,6 @@ int main()
     // Read the graph from .mtx file
     const char *filename = "data/gre_1107.mtx";
     int total_nodes = V;
-<<<<<<< HEAD
-    int graph[V][V] = {0};
-
-    readInput(filename, total_nodes, *graph);
-=======
->>>>>>> 1bf98f13f144314360ccbd7c34fc065f569dc26d
 
     readInput(filename, total_nodes, graph);
     // Convert graph to rGraph
