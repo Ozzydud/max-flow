@@ -8,7 +8,7 @@
 using namespace std;
 
 // Number of vertices in given graph
-#define V 5
+#define V 5;
 
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
@@ -111,7 +111,7 @@ int fordFulkerson(int graph[V][V], int s, int t)
 }
 
 // Read input from .mtx file
-[int][int] readInput(const char* filename, int total_nodes)
+void readInput(const char* filename, int total_nodes, int* residual)
 {
     ifstream file;
     file.open(filename);
@@ -159,7 +159,9 @@ int main()
     // Read the graph from .mtx file
     const char* filename = "cage3.mtx";
     int total_nodes = V;
-    int graph[V][V] = readInput(filename, total_nodes);
+    int graph[V][V] = {0};
+
+    readInput(filename, total_nodes, *graph);
 
     // Let us consider the source is 0 and sink is 5
     int source = 0, sink = 5;
