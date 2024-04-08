@@ -109,7 +109,12 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
-    int total_nodes = 3534; // Assuming 3534 or 1107 nodes
+    cudaError_t cudaStatus = cudaSetDevice(4);
+    if (cudaStatus != cudaSuccess) {
+        std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
+        return 1;
+    }
+    int total_nodes = 3534; // Assuming 3534 or 1107 nodes or 11397
     int* residual;
     
     cudaEvent_t start, stop; // Declare start and stop events
@@ -165,9 +170,11 @@ int main() {
     bool found_augmenting_path;
     int max_flow = 0;
     int block_size = 1024;
-    int grid_size = (total_nodes + block_size - 1) / block_size;
+    int grid_size = ceil(total_nodes * 1.0 / block_size); //(total_nodes + block_size - 1) / block_size;
 
     cudaEventRecord(start);
+    cout << "hi1" << endl;
+    int counter = 0;
 
     do{
         for (int i = 0; i < total_nodes; ++i) {
@@ -189,10 +196,10 @@ int main() {
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
-
+	//cout << "hi2" << endl;
         while(!sink_reachable(frontier, total_nodes, sink)){
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
-        
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity,  d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        //cout << "hi3" << endl;
         
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
@@ -217,13 +224,15 @@ int main() {
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
-
+	//cout << "hi4" << endl;
         // Launch BFS kernel
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+	cout << path_flow << endl;
+	counter++;
+	cout << "Counter is: " << counter << endl;
 
-
-    } while(found_augmenting_path);
-    
+    } while(counter != 16); //found_augmenting_path);
+    cout << "hi6" << endl;
     // Record stop time
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
