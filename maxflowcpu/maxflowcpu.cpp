@@ -5,15 +5,16 @@
 #include <limits.h>
 #include <queue>
 #include <string.h>
+#include <ctime> // For timing
 using namespace std;
 
 // Number of vertices in given graph
-#define V 5
+#define V 1107
 
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
 path */
-bool bfs(int rGraph[V][V], int s, int t, int parent[])
+bool bfs(int **rGraph, int s, int t, int parent[])
 {
     // Create a visited array and mark all vertices as not
     // visited
@@ -58,21 +59,22 @@ bool bfs(int rGraph[V][V], int s, int t, int parent[])
     return false;
 }
 
-// Returns the maximum flow from s to t in the given graph
-int fordFulkerson(int graph[V][V], int s, int t)
+int fordFulkerson(int **graph, int s, int t)
 {
     int u, v;
 
     // Create a residual graph and fill the residual graph
     // with given capacities in the original graph as
     // residual capacities in residual graph
-    int rGraph[V][V]; // Residual graph where rGraph[i][j]
-                      // indicates residual capacity of edge
-                      // from i to j (if there is an edge. If
-                      // rGraph[i][j] is 0, then there is not)
+    int **rGraph = new int *[V];
     for (u = 0; u < V; u++)
+    {
+        rGraph[u] = new int[V];
         for (v = 0; v < V; v++)
+        {
             rGraph[u][v] = graph[u][v];
+        }
+    }
 
     int parent[V]; // This array is filled by BFS and to
                    // store path
@@ -106,12 +108,19 @@ int fordFulkerson(int graph[V][V], int s, int t)
         max_flow += path_flow;
     }
 
+    // Free dynamically allocated memory
+    for (u = 0; u < V; u++)
+    {
+        delete[] rGraph[u];
+    }
+    delete[] rGraph;
+
     // Return the overall flow
     return max_flow;
 }
 
 // Read input from .mtx file
-void readInput(const char* filename, int total_nodes, int* residual)
+void readInput(const char *filename, int total_nodes, int **graph)
 {
     ifstream file;
     file.open(filename);
@@ -134,15 +143,11 @@ void readInput(const char* filename, int total_nodes, int* residual)
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-        // cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
-
         source--;
         destination--;
 
         int scaledCapacity = static_cast<int>(capacity * 1000);
-        residual[source * total_nodes + destination] = scaledCapacity;
-
-        // cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+        graph[source][destination] = scaledCapacity;
     }
 
     file.close();
@@ -151,22 +156,45 @@ void readInput(const char* filename, int total_nodes, int* residual)
 // Driver program to test above functions
 int main()
 {
+    clock_t start = clock(); // Start timing
+
     // Let us create a graph shown in the above example
-    // int graph[V][V] = { { 0, 16, 13, 0, 0, 0 }, { 0, 0, 10, 12, 0, 0 },
-    //                     { 0, 4, 0, 0, 14, 0 }, { 0, 0, 9, 0, 0, 20 },
-    //                     { 0, 0, 0, 7, 0, 4 }, { 0, 0, 0, 0, 0, 0 } };
+    int **graph = new int *[V];
+    for (int i = 0; i < V; i++)
+    {
+        graph[i] = new int[V];
+        for (int j = 0; j < V; j++)
+        {
+            graph[i][j] = 0; // Initialize with 0 capacity
+        }
+    }
 
     // Read the graph from .mtx file
-    const char* filename = "cage3.mtx";
+    const char *filename = "data/gre_1107.mtx";
     int total_nodes = V;
-    int graph[V][V] = {0};
 
-    readInput(filename, total_nodes, *graph);
+    readInput(filename, total_nodes, graph);
+    // Convert graph to rGraph
+    // Let us consider the source is 0 and sink is V-1
+    int source = 0, sink = V - 1;
 
-    // Let us consider the source is 0 and sink is 5
-    int source = 0, sink = 5;
+    // Timing the fordFulkerson method
+    
+    int maxFlow = fordFulkerson(graph, source, sink);
+    clock_t end = clock(); // Stop timing
 
-    cout << "The maximum possible flow is " << fordFulkerson(graph, source, sink) << endl;
+    double duration = double(end - start) / CLOCKS_PER_SEC;
+    cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
+
+    cout << "The maximum possible flow is " << maxFlow << endl;
+
+    // Free dynamically allocated memory for rGraph
+    for (int i = 0; i < V; ++i)
+    {
+        delete[] graph[i];
+    }
+
+    delete[] graph;
 
     return 0;
 }

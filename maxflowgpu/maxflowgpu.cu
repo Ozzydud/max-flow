@@ -99,6 +99,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
+<<<<<<< HEAD
     int total_nodes = 1107; // Assuming 3534 or 1107 nodes
     int* residual;
     
@@ -108,6 +109,14 @@ int main() {
     // Initialize CUDA events
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
+=======
+
+    clock_t start = clock(); // Start timing
+
+    int total_nodes = 1107;
+    int* residual;
+    
+>>>>>>> 1579511fb04ce75815db3d68a3c7155bc99544ea
 
 
     // Allocating memory for a square matrix representing the graph
@@ -211,14 +220,22 @@ int main() {
 
 
     }while(found_augmenting_path);
+<<<<<<< HEAD
     
     // Record stop time
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&milliseconds, start, stop);
     cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
+=======
+>>>>>>> 1579511fb04ce75815db3d68a3c7155bc99544ea
 
-    cout << "Maximum Flow: " << max_flow << endl;
+    clock_t end = clock(); // Stop timing
+    double duration = double(end - start) / CLOCKS_PER_SEC;
+
+    cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
+
+    cout << "The maximum possible flow is " << max_flow << endl;
     
 
     // Clean up allocated memory
@@ -230,9 +247,12 @@ int main() {
     cudaFree(d_flow);
     cudaFree(frontier);
     cudaFree(visited);
+<<<<<<< HEAD
     // Clean up events
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
+=======
+>>>>>>> 1579511fb04ce75815db3d68a3c7155bc99544ea
 
     return 0;
 }
