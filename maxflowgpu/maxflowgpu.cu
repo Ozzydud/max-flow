@@ -98,8 +98,12 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
-    int total_nodes = 5; // Assuming 5 nodes
+
+    clock_t start = clock(); // Start timing
+
+    int total_nodes = 1107;
     int* residual;
+    
 
 
     // Allocating memory for a square matrix representing the graph
@@ -108,7 +112,7 @@ int main() {
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
 
 
-    readInput("cage3.mtx", total_nodes, residual);
+    readInput("data/gre_1107.mtx", total_nodes, residual);
     
 
     int source = 0;
@@ -202,9 +206,13 @@ int main() {
 
 
     }while(found_augmenting_path);
-    
 
-    cout << "Maximum Flow: " << max_flow << endl;
+    clock_t end = clock(); // Stop timing
+    double duration = double(end - start) / CLOCKS_PER_SEC;
+
+    cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
+
+    cout << "The maximum possible flow is " << max_flow << endl;
     
 
     // Clean up allocated memory
