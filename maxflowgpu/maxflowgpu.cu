@@ -10,6 +10,7 @@
 // CUDA libraries
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
+#include <cuda_runtime_api.h>
 
 using namespace std;
 
@@ -18,10 +19,10 @@ using namespace std;
 
 void readInput(const char* filename, int total_nodes, int* residual) {
 
-	ifstream file;
-	file.open(filename);
+        ifstream file;
+        file.open(filename);
 
-	if (!file) {
+        if (!file) {
         cout <<  "Error reading file!";
         exit(1);
     }
@@ -36,7 +37,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
 
-        cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
+        //cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
         source--;
         destination--;
@@ -44,206 +45,219 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         int scaledCapacity = static_cast<int>(capacity * 1000);
         residual[source * total_nodes + destination] = scaledCapacity;
 
-        cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+        //cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
     }
+    
 
     file.close();
 }
 
+__global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int sink, int* locks){
+    int Idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
+        frontier[Idx] = false;
+        visited[Idx] = true;
+
+        for (int i = Idx; i < vertices; i++) {
+            if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
+                if(atomicCAS(locks+i, 0 , 1) == 1 || frontier[i]){
+                                continue;
+                }
+                frontier[i] = true;
+                locks[i] = 0;
 
 
-/* int fordFulkersonCuda(int *row, int *indices, int *data, int source, int sink, int vertices){
-    int *d_row, *d_indices, *d_data, *residual, *parent, *flow;
-    bool *visited;
-    int *queue;
-    int *residual;
+                parent[i] = Idx;
+                flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+            }
+        }
 
-    // Creating residual graph
-    residual = (int*) malloc(vertices); 
-    memset(residual, 0, vertices)
-
-
-    // Allocate all the memory
-    cudaMalloc(&d_row, vertices * sizeof(int));
-    cudaMalloc(&d_indices, vertices * sizeof(int));
-    cudaMalloc(&d_data, vertices * sizeof(int));
-    cudaMalloc(&residual, vertices * sizeof(int)); // Same as above - we need to find out how much memory to allocate
-    cudaMalloc(&parent, vertices * sizeof(int));
-    cudaMalloc(&flow, vertices * sizeof(int));
-    cudaMalloc(&visited, vertices * sizeof(bool));
-    cudaMalloc(&queue, vertices * sizeof(int));
-
-    // Copy memory to device
-    cudaMemcpy(d_row, row, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_indices, indices, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_data, data, vertices * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(residual, d_row, vertices * sizeof(int), cudaMemcpyHostToDevice);
-
-    // Initialize arrays
-    cudaMemset(parent, -1, vertices * sizeof(int));
-    cudaMemset(flow, 0, vertices * sizeof(int));
-    cudaMemset(visited, 0, vertices * sizeof(bool));
-
-    int block_size = 256; //probably not correct
-    int num_blocks = (vertices + block_size - 1) / block_size;
-
-    cudaBFS<<<num_blocks, block_size>>>(d_row, d_indices, d_data, source, sink, parent, queue, flow, residual, visited, vertices);
-
-    augmentPath<<<num_blocks, block_size>>>(residual, parent, flow, source, sink, vertices);
-
-    int max_flow;
-    cudaMemcpy(&max_flow, &flow[sink], sizeof(int), cudaMemcpyDeviceToHost);
-
-    // Free device memory
-    cudaFree(d_row);
-    cudaFree(d_indices);
-    cudaFree(d_data);
-    cudaFree(residual);
-    cudaFree(parent);
-    cudaFree(flow);
-    cudaFree(visited);
-    cudaFree(queue);
-
-    return max_flow;
+        for (int i = 0; i < Idx; i++) {
+            if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
+                if(atomicCAS(locks+i, 0 , 1) == 1 || frontier[i]){
+                                continue;
+                }
+                frontier[i] = true;
+                locks[i] = 0;
+                parent[i] = Idx;
+                flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+            }
+        }
+    }
 }
 
 
-template <typename T>
-std::vector<T> readVectorFromFile(const std::string& filePath, float scaleFactor) {
-    std::vector<T> values;
-    std::ifstream file(filePath);
-    float value;
-    while (file >> value) {
-        // Scale, round, and then convert to integer
-        int scaledValue = static_cast<int>(round(value * scaleFactor));
-        values.push_back(scaledValue);
-    }
-    return values;
-} */
+__global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, int* r_capacity, int path_flow){
+    int Idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if(Idx < total_nodes && do_change_capacity[Idx]){
+        r_capacity[parent[Idx] * total_nodes + Idx] -= path_flow;
+        r_capacity[Idx * total_nodes + parent[Idx]] += path_flow; 
+    }    
+}
+
+
+bool sink_reachable(bool* frontier, int total_nodes, int sink){
+    for (int i = total_nodes-1; i > -1; --i) {
+                if(frontier[i]){
+                        return i == sink;
+                }
+        }
+        return true;
+}
+
 
 
 int main() {
-/*     float scaleFactor = 1000.0f;
+    cudaError_t cudaStatus = cudaSetDevice(4);
+    if (cudaStatus != cudaSuccess) {
+        std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
+        return 1;
+    }
+    int total_nodes = 3534; // Assuming 3534 or 1107 nodes or 11397
+    int* residual;
+    
+    cudaEvent_t start, stop; // Declare start and stop events
+    float milliseconds = 0; // Variable to store elapsed time in milliseconds
 
-    std::vector<int> data = readVectorFromFile<int>("output_csr_data.txt", scaleFactor);
-    std::vector<int> colIndices = readVectorFromFile<int>("output_csr_col_indices.txt", 1);
-    std::vector<int> csrRowPtr = readVectorFromFile<int>("output_csr_row_ptr.txt", 1);
+    // Initialize CUDA events
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
 
-
-    int V = csrRowPtr.size() - 1; // Number of vertices
-    int s = 0; // Source
-    int t = 5; // Sink
-
-    // Convert vectors to pointers
-    int *d_csrRowPtr = &csrRowPtr[0];
-    int *d_colIndices = &colIndices[0];
-    int *d_data = &data[0];
-
-    int max_flow = fordFulkersonCuda(d_csrRowPtr, d_colIndices, d_data, s, t, V);
-    std::cout << "The maximum possible flow is " << max_flow << std::endl; */
-
-
-
-    int total_nodes = 19;
-    int *residual;
 
     // Allocating memory for a square matrix representing the graph
     residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
-    cout << "test01: " << endl;
+
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
-    cout << "test02: " << endl;
 
-    readInput("cage3.mtx", total_nodes, residual);
-    cout << residual[2*total_nodes+2] << endl;
 
-        for (int i = 0; i < total_nodes; ++i) {
-        for (int j = 0; j < total_nodes; ++j) {
-            cout << residual[i * total_nodes + j] << " ";
-        }
-        cout << endl;
-    }
+    readInput("data/cage9.mtx", total_nodes, residual);
+  
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
+    int path_flow;
 
     int* parent = new int[total_nodes];
     int* flow = new int[total_nodes];
-
-    for (int i = 0; i < total_nodes; ++i) {
-        parent[i] = -1; // Initialize parent array
-        flow[i] = INF;  // Initialize flow array with INF
-    }
+    bool* frontier = new bool[total_nodes];
+    bool* visited = new bool [total_nodes];
+    bool* do_change_capacity = new bool[total_nodes];
+    
 
     // Set initial flow from source to 0
     flow[source] = 0;
+    int* locks = new int[total_nodes];
+    int* d_r_capacity, * d_parent, * d_flow, *d_locks;;
+    bool* d_frontier, * d_visited, *d_do_change_capacity;
 
-    int* d_r_capacity, * d_parent, * d_flow;
-    bool* frontier, * visited;
-
-    cout << "test2: " << endl;
-
+    size_t locks_size = total_nodes * sizeof(int);
+    
     // Allocate memory on device
     cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
     cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
-    cudaMalloc((void**)&frontier, total_nodes * sizeof(bool));
-    cudaMalloc((void**)&visited, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
+    cudaMalloc((void **)&d_locks, locks_size);
 
-    cout << "test3: " << d_r_capacity << endl;
 
     // Copy data from host to device
-    cudaMemcpy(d_r_capacity, residual, total_nodes * 3 * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemset(frontier, 0, total_nodes * sizeof(bool)); // Initialize to false
-    cudaMemset(visited, 0, total_nodes * sizeof(bool)); // Initialize to false
+    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
 
-    cout << "test4: " << d_r_capacity << endl;
 
-    bool sink_reachable = true;
+    bool found_augmenting_path;
     int max_flow = 0;
+    int block_size = 1024;
+    int grid_size = ceil(total_nodes * 1.0 / block_size); //(total_nodes + block_size - 1) / block_size;
 
-    while (sink_reachable) {
-        sink_reachable = false;
+    cudaEventRecord(start);
+    cout << "hi1" << endl;
+    int counter = 0;
 
-        cout << "test5: " << d_r_capacity << endl;
+    do{
+        for (int i = 0; i < total_nodes; ++i) {
+        parent[i] = -1; // Initialize parent array
+        flow[i] = INF;  // Initialize flow array with INF
+        locks[i] = 0;
+        if(i == source){
+            frontier[i] = true;
+        }else{
+            frontier[i] = false;
+        }
 
-        // Initialize frontier array (only the source node is in the frontier)
-        cudaMemset(frontier + source, 0, sizeof(bool));
-        cudaMemcpy(frontier + source, &d_flow[source], sizeof(bool), cudaMemcpyDeviceToDevice);
+        visited[i] = false;
+        do_change_capacity[i] = false;
+        }
+   
+        cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
+	//cout << "hi2" << endl;
+        while(!sink_reachable(frontier, total_nodes, sink)){
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity,  d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        //cout << "hi3" << endl;
         
-        // Initialize visited array (all nodes are not visited)
-        cudaMemset(visited, 0, total_nodes * sizeof(bool));
 
-        // Initialize parent array to -1
-        cudaMemset(d_parent, -1, total_nodes * sizeof(int));
+        cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        }
 
-        int block_size = 256;
-        int grid_size = (total_nodes + block_size - 1) / block_size;
-        cout << "test6: " << d_r_capacity << endl;
+        found_augmenting_path = frontier[sink];
+
+        if(!found_augmenting_path){
+            break;
+        }
+
+        cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
+
+        path_flow = flow[sink];
+        max_flow += path_flow;
+
+        for(int i = sink; i != source; i = parent[i]){
+                        do_change_capacity[i] = true;
+            i--;
+                }
+
+        cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+
+	//cout << "hi4" << endl;
         // Launch BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, frontier, visited, total_nodes, sink);
-        cudaDeviceSynchronize();
-        cout << "test7: " << d_r_capacity << endl;
+        cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+	cout << path_flow << endl;
+	counter++;
+	cout << "Counter is: " << counter << endl;
 
-        // Check if sink is reachable
-    cudaMemcpy(&sink_reachable, &frontier[sink], sizeof(bool), cudaMemcpyDeviceToHost);
-
-    cout << "test8: " << d_r_capacity << endl;
+    } while(counter != 16); //found_augmenting_path);
+    cout << "hi6" << endl;
+    // Record stop time
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
-    }
+    
 
     // Clean up allocated memory
     delete[] residual;
     delete[] parent;
     delete[] flow;
+    delete[] locks;
     cudaFree(d_r_capacity);
     cudaFree(d_parent);
     cudaFree(d_flow);
     cudaFree(frontier);
     cudaFree(visited);
-    
+    cudaFree(d_locks);
+    // Clean up events
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
 
     return 0;
 }
+
+
