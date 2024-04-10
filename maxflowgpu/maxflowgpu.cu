@@ -219,7 +219,6 @@ int main() {
 
         for(int i = sink; i != source; i = parent[i]){
                         do_change_capacity[i] = true;
-            i--;
                 }
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
@@ -247,12 +246,16 @@ int main() {
     delete[] parent;
     delete[] flow;
     delete[] locks;
+    delete[] frontier;
+    delete[] visited;
+    delete[] do_change_capacity;
     cudaFree(d_r_capacity);
     cudaFree(d_parent);
     cudaFree(d_flow);
-    cudaFree(frontier);
-    cudaFree(visited);
+    cudaFree(d_frontier);
+    cudaFree(d_visited);
     cudaFree(d_locks);
+    cudaFree(d_do_change_capacity)
     // Clean up events
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
