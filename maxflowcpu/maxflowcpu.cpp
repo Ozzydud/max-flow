@@ -2,9 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <limits.h>
 #include <queue>
-#include <string.h>
 #include <ctime> // For timing
 using namespace std;
 
@@ -14,12 +12,11 @@ using namespace std;
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
 path */
-bool bfs(int **rGraph, int s, int t, int parent[])
+bool bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent)
 {
     // Create a visited array and mark all vertices as not
     // visited
-    bool visited[V];
-    memset(visited, 0, sizeof(visited));
+    vector<bool> visited(V, false);
 
     // Create a queue, enqueue source vertex and mark source
     // vertex as visited
@@ -59,25 +56,22 @@ bool bfs(int **rGraph, int s, int t, int parent[])
     return false;
 }
 
-int fordFulkerson(int **graph, int s, int t)
+int fordFulkerson(vector<vector<int>>& graph, int s, int t)
 {
-    int u, v;
-
     // Create a residual graph and fill the residual graph
     // with given capacities in the original graph as
     // residual capacities in residual graph
-    int **rGraph = new int *[V];
-    for (u = 0; u < V; u++)
+    vector<vector<int>> rGraph(V, vector<int>(V));
+    for (int u = 0; u < V; u++)
     {
-        rGraph[u] = new int[V];
-        for (v = 0; v < V; v++)
+        for (int v = 0; v < V; v++)
         {
             rGraph[u][v] = graph[u][v];
         }
     }
 
-    int parent[V]; // This array is filled by BFS and to
-                   // store path
+    vector<int> parent(V); // This vector is filled by BFS and to
+                           // store path
 
     int max_flow = 0; // There is no flow initially
 
@@ -89,17 +83,17 @@ int fordFulkerson(int **graph, int s, int t)
         // the path filled by BFS. Or we can say find the
         // maximum flow through the path found.
         int path_flow = INT_MAX;
-        for (v = t; v != s; v = parent[v])
+        for (int v = t; v != s; v = parent[v])
         {
-            u = parent[v];
+            int u = parent[v];
             path_flow = min(path_flow, rGraph[u][v]);
         }
 
         // update residual capacities of the edges and
         // reverse edges along the path
-        for (v = t; v != s; v = parent[v])
+        for (int v = t; v != s; v = parent[v])
         {
-            u = parent[v];
+            int u = parent[v];
             rGraph[u][v] -= path_flow;
             rGraph[v][u] += path_flow;
         }
@@ -108,19 +102,12 @@ int fordFulkerson(int **graph, int s, int t)
         max_flow += path_flow;
     }
 
-    // Free dynamically allocated memory
-    for (u = 0; u < V; u++)
-    {
-        delete[] rGraph[u];
-    }
-    delete[] rGraph;
-
     // Return the overall flow
     return max_flow;
 }
 
 // Read input from .mtx file
-void readInput(const char *filename, int total_nodes, int **graph)
+void readInput(const char *filename, vector<vector<int>>& graph)
 {
     ifstream file;
     file.open(filename);
@@ -159,27 +146,17 @@ int main()
     clock_t start = clock(); // Start timing
 
     // Let us create a graph shown in the above example
-    int **graph = new int *[V];
-    for (int i = 0; i < V; i++)
-    {
-        graph[i] = new int[V];
-        for (int j = 0; j < V; j++)
-        {
-            graph[i][j] = 0; // Initialize with 0 capacity
-        }
-    }
+    vector<vector<int>> graph(V, vector<int>(V, 0));
 
     // Read the graph from .mtx file
     const char *filename = "data/cage10.mtx";
-    int total_nodes = V;
+    readInput(filename, graph);
 
-    readInput(filename, total_nodes, graph);
     // Convert graph to rGraph
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
     // Timing the fordFulkerson method
-    
     int maxFlow = fordFulkerson(graph, source, sink);
     clock_t end = clock(); // Stop timing
 
@@ -187,14 +164,6 @@ int main()
     cout << "Time taken by fordFulkerson: " << duration << " seconds" << endl;
 
     cout << "The maximum possible flow is " << maxFlow << endl;
-
-    // Free dynamically allocated memory for rGraph
-    for (int i = 0; i < V; ++i)
-    {
-        delete[] graph[i];
-    }
-
-    delete[] graph;
 
     return 0;
 }
