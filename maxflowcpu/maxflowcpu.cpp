@@ -9,6 +9,8 @@ using namespace std;
 // Number of vertices in given graph
 #define V 11397
 
+#define INF 1e9
+
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
 path */
