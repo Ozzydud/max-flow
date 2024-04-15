@@ -196,7 +196,7 @@ int main() {
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
-	//cout << "hi2" << endl;
+	    //cout << "hi2" << endl;
         while(!sink_reachable(frontier, total_nodes, sink)){
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity,  d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
         //cout << "hi3" << endl;
