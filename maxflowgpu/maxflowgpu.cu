@@ -127,12 +127,12 @@ int main() {
 
     // Allocating memory for a square matrix representing the graph
     residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
-
+    cout << "residual" << endl;
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
-
+    cout << "residual1" << endl;
 
     readInput("data/cage12.mtx", total_nodes, residual);
-  
+    cout << "data read" << endl;
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
@@ -153,13 +153,20 @@ int main() {
 
     size_t locks_size = total_nodes * sizeof(int);
     
+    cout << "hi1" << endl;
     // Allocate memory on device
     cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
+    cout << "hi1" << endl;
     cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
+    cout << "hi2" << endl;
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
+    cout << "hi3" << endl;
     cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
+    cout << "hi4" << endl;
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
+    cout << "hi5" << endl;
     cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
+    cout << "hi6" << endl;
     cudaMalloc((void**)&d_locks, locks_size);
 
 
