@@ -30,20 +30,22 @@ void readInput(const char* filename, int total_nodes, int* residual) {
     string line;
     int source, destination;
     float capacity;
-
+    cout << "before loop" << endl;
     while (getline(file, line)) {
         if (line.empty()) continue;
 
         stringstream linestream(line);
         linestream >> source >> destination >> capacity;
-
+        cout << "reading lines" << endl;
         //cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
         source--;
         destination--;
-
+        cout << "before scaling" << endl;
         int scaledCapacity = static_cast<int>(capacity * 1000);
+        cout << "after scaling" << endl;
         residual[source * total_nodes + destination] = scaledCapacity;
+        cout << "adding to residual" << endl;
 
         //cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
     }
