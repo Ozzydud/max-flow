@@ -34,7 +34,7 @@ sink = 9999  # Last node
 # Check if there is a path from source to sink
 if nx.has_path(G, source, sink):
     print("There is a path from the source to the sink.")
-    matrix = nx.to_scipy_sparse_matrix(G, nodelist=sorted(G.nodes()), weight='weight', dtype=float, format='csr')
+    matrix = nx.to_scipy_sparse_matrix(G, nodelist=sorted(G.nodes()), weight='weight', dtype=int, format='csr')
     # Save the matrix to a .mtx file
     mmwrite("output_graph.mtx", matrix)
 else:
