@@ -16,8 +16,8 @@ def generate_weight():
 # Add 500,000 random edges with weights
 while G.number_of_edges() < 40000:
     # Select two random nodes
-    u = random.randint(0, 40000)
-    v = random.randint(0, 40000)
+    u = random.randint(0, 9999)
+    v = random.randint(0, 9999)
     
     # Add an edge if it does not already exist and is not a self-loop
     if u != v and not G.has_edge(u, v):
