@@ -28,7 +28,7 @@ print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edge
 
 # Define source and sink
 source = 0  # First node
-sink = 10000  # Last node
+sink = 9999  # Last node
 
 # Check if there is a path from source to sink
 if nx.has_path(G, source, sink):
