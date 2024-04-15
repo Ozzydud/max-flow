@@ -6,14 +6,14 @@ from scipy.sparse import csr_matrix
 # Create an empty undirected graph
 G = nx.Graph()
 
-# Add 10,000 nodes
+# Add X nodes
 G.add_nodes_from(range(10000))
 
 # Function to generate a random weight
 def generate_weight():
     return random.uniform(0.1, 10.0)  # You can adjust the range as needed
 
-# Add 500,000 random edges with weights
+# Add X random edges with weights
 while G.number_of_edges() < 1000000:
     # Select two random nodes
     u = random.randint(0, 9999)
