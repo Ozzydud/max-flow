@@ -51,6 +51,8 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
         cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
         counter++;
+        cout << counter << endl;
+        
     }
     
 
