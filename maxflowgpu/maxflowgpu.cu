@@ -47,7 +47,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         residual[source * total_nodes + destination] = scaledCapacity;
         cout << "adding to residual" << endl;
 
-        //cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+        cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
     }
     
 
