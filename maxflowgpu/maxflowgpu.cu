@@ -123,7 +123,7 @@ int main() {
     // Initialize CUDA events
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
-
+    cudaEventRecord(start);
 
     // Allocating memory for a square matrix representing the graph
     residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
@@ -160,7 +160,7 @@ int main() {
     cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
     cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
-    cudaMalloc((void **)&d_locks, locks_size);
+    cudaMalloc((void**)&d_locks, locks_size);
 
 
     // Copy data from host to device
@@ -172,7 +172,7 @@ int main() {
     int block_size = 1024;
     int grid_size = ceil(total_nodes * 1.0 / block_size); //(total_nodes + block_size - 1) / block_size;
 
-    cudaEventRecord(start);
+    
     cout << "hi1" << endl;
     int counter = 0;
 
