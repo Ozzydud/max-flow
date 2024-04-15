@@ -29,6 +29,8 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
     string line;
     int source, destination;
+    int counter = 0;
+
     float capacity;
     cout << "before loop" << endl;
     while (getline(file, line)) {
@@ -48,6 +50,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         cout << "adding to residual" << endl;
 
         cout << "Residual capacity[" << source << "][" << destination << "]: " << residual[source * total_nodes + destination] << endl;
+        counter++;
     }
     
 
