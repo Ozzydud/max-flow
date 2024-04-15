@@ -255,7 +255,7 @@ int main() {
     cudaFree(d_frontier);
     cudaFree(d_visited);
     cudaFree(d_locks);
-    cudaFree(d_do_change_capacity)
+    cudaFree(d_do_change_capacity);
     // Clean up events
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
