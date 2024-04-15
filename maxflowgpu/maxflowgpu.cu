@@ -114,7 +114,7 @@ int main() {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
-    int total_nodes = 3534; // Assuming 3534 or 1107 nodes or 11397
+    int total_nodes = 11397; // Assuming 3534 or 1107 nodes or 11397
     int* residual;
     
     cudaEvent_t start, stop; // Declare start and stop events
@@ -131,7 +131,7 @@ int main() {
     memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
 
 
-    readInput("data/cage9.mtx", total_nodes, residual);
+    readInput("data/cage11.mtx", total_nodes, residual);
   
 
     int source = 0;
