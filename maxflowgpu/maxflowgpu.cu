@@ -114,7 +114,7 @@ int main() {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
-    int total_nodes = 11397; // Assuming 3534 or 1107 nodes or 11397
+    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 
     int* residual;
     
     cudaEvent_t start, stop; // Declare start and stop events
