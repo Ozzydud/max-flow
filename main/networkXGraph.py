@@ -14,10 +14,10 @@ def generate_weight():
     return round(random.uniform(0.1, 1.0), 3)  # You can adjust the range as needed
 
 # Add X random edges with weights
-while G.number_of_edges() < 18:
+while G.number_of_edges() < 10:
     # Select two random nodes
-    u = random.randint(0, 18)
-    v = random.randint(0, 18)
+    u = random.randint(0, 4)
+    v = random.randint(0, 4)
     
     # Add an edge if it does not already exist and is not a self-loop
     if u != v and not G.has_edge(u, v):
