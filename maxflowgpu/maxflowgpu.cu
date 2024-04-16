@@ -37,15 +37,25 @@ void readInput(const char* filename, int total_nodes, int* residual) {
         if (line.empty()) continue;
 
         stringstream linestream(line);
-        linestream >> source >> destination >> capacity;
-        //cout << "reading lines" << endl;
+        //linestream >> source >> destination >> capacity;
+        if (!(linestream >> source >> destination >> capacity)) {
+    	cerr << "Error parsing line: " << line << endl;
+   	 continue;
+	}
+
+	//cout << "reading lines" << endl;
         //cout << "Read: Source=" << source << ", Destination=" << destination << ", Capacity=" << capacity << endl;
 
         source--;
         destination--;
         //cout << "before scaling" << endl;
         int scaledCapacity = static_cast<int>(capacity * 1000);
-        //cout << "after scaling" << endl;
+        if (!residual) {
+    	cerr << "Memory allocation failed for residual matrix.";
+    	exit(EXIT_FAILURE);
+	}
+
+	//cout << "after scaling" << endl;
         residual[source * total_nodes + destination] = scaledCapacity;
         //cout << "adding to residual" << endl;
 
@@ -121,7 +131,7 @@ int main() {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
-    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 5; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
     
     cudaEvent_t start, stop; // Declare start and stop events
@@ -133,12 +143,23 @@ int main() {
     cudaEventRecord(start);
 
     // Allocating memory for a square matrix representing the graph
-    residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
+    //residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
     cout << "residual" << endl;
-    memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
+    //memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
     cout << "residual1" << endl;
 
-    readInput("data/cage11.mtx", total_nodes, residual);
+    try {
+	residual = new int[total_nodes * total_nodes]();
+    } catch (const std::bad_alloc& e) {
+	    std::cerr << "Failed to allocate memory for the residual matrix: " << e.what() << std::endl;
+	    return 1;
+    }
+
+
+
+
+
+    readInput("cage3.mtx", total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
@@ -241,8 +262,8 @@ int main() {
         // Launch BFS kernel
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
 	//cout << path_flow << endl;
-	//counter++;
-	//cout << "Counter is: " << counter << endl;
+	counter++;
+	cout << "Counter is: " << counter << endl;
 
     } while(found_augmenting_path); //found_augmenting_path);
     cout << "hi6" << endl;
