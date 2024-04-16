@@ -159,7 +159,7 @@ int main() {
 
 
 
-    readInput("cage3.mtx", total_nodes, residual);
+    readInput("/home/matthew.jezek/max-flow/main/custom_output_graph.mtx", total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
