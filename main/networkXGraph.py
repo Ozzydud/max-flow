@@ -7,17 +7,17 @@ from scipy.sparse import csr_matrix
 G = nx.Graph()
 
 # Add X nodes
-G.add_nodes_from(range(1000))
+G.add_nodes_from(range(5))
 
 # Function to generate a random weight
 def generate_weight():
     return round(random.uniform(0.1, 1.0), 3)  # You can adjust the range as needed
 
 # Add X random edges with weights
-while G.number_of_edges() < 999:
+while G.number_of_edges() < 18:
     # Select two random nodes
-    u = random.randint(0, 999)
-    v = random.randint(0, 999)
+    u = random.randint(0, 18)
+    v = random.randint(0, 18)
     
     # Add an edge if it does not already exist and is not a self-loop
     if u != v and not G.has_edge(u, v):
@@ -28,7 +28,7 @@ print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edge
 
 # Define source and sink
 source = 0  # First node
-sink = 999  # Last node
+sink = 4  # Last node
 
 # Create a custom function to write the matrix
 def write_matrix(G, filename):
