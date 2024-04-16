@@ -11,7 +11,7 @@ G.add_nodes_from(range(10000))
 
 # Function to generate a random weight
 def generate_weight():
-    return random.uniform(0.1, 10.0)  # You can adjust the range as needed
+    return random.uniform(0.1, 1.0)  # You can adjust the range as needed
 
 # Add X random edges with weights
 while G.number_of_edges() < 9999:
