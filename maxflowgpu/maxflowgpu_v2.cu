@@ -38,11 +38,14 @@ Edge *readInput(const char* filename, int total_nodes, int num_edges){
 
     	int from, to;
     	float weight;
+	
 
     	// Read the data from the file into the edges array
     	for (int i = 0; i < num_edges; i++){
         	fscanf(file, "%d %d %f", &from, &to, &weight);
-        	edges[i] = {from - 1, to - 1, weight*1000};
+		int scaledweight = static_cast<int>(weight*1000);
+        	edges[i] = {from - 1, to - 1, scaledweight};
+		//cout << edges[0].weight << endl;
     }
 	fclose(file);
     	return edges;
@@ -57,7 +60,7 @@ __global__ void cudaBFS(Edge *edges, bool *frontier, bool* visited, int vertices
         visited[Idx] = true;
 
         for (int i = Idx; i < vertices; i++) {
-            if (!frontier[i] && !visited[i] && edges[Idx + i].weight > 0) {
+            if (!frontier[i] && !visited[i] && edges[i].weight > 0) {
                 if(atomicCAS(locks+i, 0 , 1) == 1 || frontier[i]){
                                 continue;
                 }
@@ -66,19 +69,19 @@ __global__ void cudaBFS(Edge *edges, bool *frontier, bool* visited, int vertices
 
 
                 edges[i].from = Idx;
-                edges[i].weight = min(edges[Idx].weight, edges[Idx + i].weight);
+                edges[i].weight = min(edges[Idx].weight, edges[i].weight);
             }
         }
 
         for (int i = 0; i < Idx; i++) {
-            if (!frontier[i] && !visited[i] && edges[Idx + i].weight > 0) {
+            if (!frontier[i] && !visited[i] && edges[i].weight > 0) {
                 if(atomicCAS(locks+i, 0 , 1) == 1 || frontier[i]){
                                 continue;
                 }
                 frontier[i] = true;
                 locks[i] = 0;
                 edges[i].from = Idx;
-                edges[i].weight = min(edges[Idx].weight, edges[Idx + i].weight);
+                edges[i].weight = min(edges[Idx].weight, edges[i].weight);
             }
         }
     }
@@ -89,8 +92,9 @@ __global__ void cudaAugment_path(Edge *edges, bool* do_change_capacity, int tota
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(Idx < total_nodes && do_change_capacity[Idx]){
 
-	edges[edges[Idx].from + Idx].weight -= path_flow;
-	edges[edges[Idx].from + Idx].weight += path_flow; 
+	edges[Idx].weight -= path_flow;
+	//maybe to instead of from?
+	edges[Idx].weight += path_flow; 
     }    
 }
 
@@ -170,8 +174,10 @@ int main() {
     int counter = 0;
 
     do{
+	cudaMemcpy(d_edges, edges, num_edges * sizeof(Edge), cudaMemcpyHostToDevice);
+	cout << edges[1].weight << edges[1].from << edges[1].to << endl;
         for (int i = 0; i < total_nodes; ++i) {
-        edges[i].weight = INF;  // Initialize flow array with INF
+        edges[i].weight = INF; // Initialize flow array with INF
         locks[i] = 0;
         if(i == source){
             frontier[i] = true;
@@ -179,32 +185,39 @@ int main() {
             frontier[i] = false;
         }
 
+	//cout<< frontier[i] << endl;
+
         visited[i] = false;
         do_change_capacity[i] = false;
         }
-   
-	cudaMemcpy(d_edges, edges, num_edges * sizeof(Edge), cudaMemcpyHostToDevice);	
+   	
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
-	    //cout << "hi2" << endl;
+	cout << "hi2" << endl;
         while(!sink_reachable(frontier, total_nodes, sink)){
         cudaBFS<<<grid_size, block_size>>>(d_edges, d_frontier, d_visited, total_nodes, sink, d_locks);
-        //cout << "hi3" << endl;
+        cout << "hi3" << endl;
         
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+	//for(int i = 0; i < total_nodes; i++){
+	//	cout << frontier[i] << endl;
+	//}
         }
 
         found_augmenting_path = frontier[sink];
-
+	cout << found_augmenting_path << endl;
         if(!found_augmenting_path){
             break;
         }
 
-	cudaMemcpy(edges, d_edges, num_edges * sizeof(Edge), cudaMemcpyDeviceToHost);
+	cout << edges[0].weight << endl;
 
-        path_flow = edges[sink].weight;
+	cudaMemcpy(edges, d_edges, num_edges * sizeof(Edge), cudaMemcpyDeviceToHost);
+	
+        path_flow = edges[num_edges - 1].weight;
+	cout << "path flow"  << path_flow << endl;
         max_flow += path_flow;
 
         for(int i = sink; i != source; i = edges[i].from){
@@ -213,14 +226,14 @@ int main() {
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
-	//cout << "hi4" << endl;
+	cout << "hi4" << endl;
         // Launch BFS kernel
         cudaAugment_path<<< grid_size, block_size >>>(d_edges, d_do_change_capacity, total_nodes, path_flow);
 	cout << path_flow << endl;
 	counter++;
-	cout << "Counter is: " << counter << endl;
 
-    } while(counter != 16); //found_augmenting_path);
+
+    } while(found_augmenting_path); //found_augmenting_path);
     cout << "hi6" << endl;
     // Record stop time
     cudaEventRecord(stop);
