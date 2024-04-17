@@ -154,7 +154,7 @@ int main() {
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
     int path_flow;
-
+    cout << "test1" << endl;
     int* parent = new int[total_nodes];
     int* flow = new int[total_nodes];
     bool* frontier = new bool[total_nodes];
@@ -172,6 +172,7 @@ int main() {
     size_t locks_size = total_nodes * sizeof(int);
     
     // Allocate memory on device
+     cout << "test2" << endl;
     cudaMalloc((void**)&d_edges, edges_size);
     cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
@@ -181,6 +182,7 @@ int main() {
     cudaMalloc((void**)&d_locks, locks_size);
 
     // Copy data from host to device
+     cout << "test3" << endl;
     cudaMemcpy(d_edges, edges.data(), edges_size, cudaMemcpyHostToDevice);
 
     bool found_augmenting_path;
@@ -189,7 +191,7 @@ int main() {
     int grid_size = ceil(total_nodes * 1.0 / block_size);
 
     int counter = 0;
-
+     cout << "test4" << endl;
     do {
         for (int i = 0; i < total_nodes; ++i) {
             parent[i] = -1; // Initialize parent array
@@ -203,17 +205,19 @@ int main() {
             visited[i] = false;
             do_change_capacity[i] = false;
         }
+         cout << "test5" << endl;
    
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
-
+         cout << "test6" << endl;
         while (!sink_reachable(frontier, total_nodes, sink)) {
             cudaBFS<<<grid_size, block_size>>>(d_edges, edges.size(), d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
             cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
+         cout << "test7" << endl;
 
         found_augmenting_path = frontier[sink];
 
@@ -230,12 +234,12 @@ int main() {
         for (int i = sink; i != source; i = parent[i]) {
             do_change_capacity[i] = true;
         }
-
+         cout << "test8" << endl;
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
         // Launch augmenting path kernel
         cudaAugment_path<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_edges, edges.size(), path_flow);
-
+         cout << "test9" << endl;
         counter++;
     } while (found_augmenting_path);
     cout << "Max flor is: " << max_flow << endl;
