@@ -2,22 +2,31 @@ import networkx as nx
 import random
 from scipy.io import mmwrite
 from scipy.sparse import csr_matrix
+import sys
+
+# Handling command-line arguments
+if len(sys.argv) != 3:
+    print("Usage: python script.py <number_of_nodes> <number_of_edges>")
+    sys.exit(1)
+
+number_of_nodes = int(sys.argv[1])
+number_of_edges = int(sys.argv[2])
 
 # Create an empty undirected graph
 G = nx.Graph()
 
 # Add X nodes
-G.add_nodes_from(range(10000))
+G.add_nodes_from(range(number_of_nodes))
 
 # Function to generate a random weight
 def generate_weight():
     return round(random.uniform(0.1, 1.0), 8)  # You can adjust the range as needed
 
 # Add X random edges with weights
-while G.number_of_edges() < 2000000:
+while G.number_of_edges() < number_of_edges:
     # Select two random nodes
-    u = random.randint(0, 9999)
-    v = random.randint(0, 9999)
+    u = random.randint(0, number_of_nodes - 1)
+    v = random.randint(0, number_of_nodes - 1)
     
     # Add an edge if it does not already exist and is not a self-loop
     if u != v and not G.has_edge(u, v):
@@ -28,7 +37,7 @@ print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edge
 
 # Define source and sink
 source = 0  # First node
-sink = 9999  # Last node
+sink = number_of_nodes - 1  # Last node
 
 # Create a custom function to write the matrix
 def write_matrix(G, filename):
@@ -46,7 +55,7 @@ if nx.has_path(G, source, sink):
     #matrix = nx.to_scipy_sparse_array(G, nodelist=sorted(G.nodes()), weight='weight', dtype=float, format='csr')
     # Save the matrix to a .mtx file
     #mmwrite("output_graph.mtx", matrix)
-    write_matrix(G, "custom_output_graph1.mtx")
+    write_matrix(G, "custom_output_graph_test.mtx")
 else:
     print("No path from the source to the sink.")
 
