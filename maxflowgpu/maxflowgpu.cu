@@ -132,7 +132,7 @@ int main() {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
-    int total_nodes = 10000; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 1107; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
     
     cudaEvent_t start, stop; // Declare start and stop events
@@ -160,7 +160,7 @@ int main() {
 
 
 
-    readInput("/home/matthew.jezek/max-flow/main/custom_output_graph.mtx", total_nodes, residual);
+    readInput("data/gre_1107.mtx", total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
