@@ -120,10 +120,19 @@ int main() {
         return 1;
     }
 
-    int total_nodes = 10000; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+	
+
+    cudaEvent_t start, stop; // Declare start and stop events
+        float milliseconds = 0; // Variable to store elapsed time in milliseconds
+
+	    // Initialize CUDA events
+	    cudaEventCreate(&start);
+	        cudaEventCreate(&stop);
+		    cudaEventRecord(start);
 
     vector<Edge> edges;
-    readInput("/home/matthew.jezek/max-flow/main/custom_output_graph1.mtx", total_nodes, edges);
+    readInput("data/cage11.mtx", total_nodes, edges);
     cout << "data read" << endl;
 
     int source = 0;
@@ -213,8 +222,13 @@ int main() {
 
         counter++;
     } while (found_augmenting_path);
-
+    cout << "Max flor is: " << max_flow << endl;
     cout << "Counter is: " << counter << endl;
+
+    cudaEventRecord(stop);
+        cudaEventSynchronize(stop);
+	    cudaEventElapsedTime(&milliseconds, start, stop);
+	        cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
 
     // Clean up allocated memory
     delete[] parent;
@@ -230,6 +244,10 @@ int main() {
     cudaFree(d_visited);
     cudaFree(d_locks);
     cudaFree(d_do_change_capacity);
+
+
+    cudaEventDestroy(start);
+        cudaEventDestroy(stop);
 
     return 0;
 }
