@@ -71,7 +71,7 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
         frontier[Idx] = false;
         visited[Idx] = true;
 
-        for (int i = 0; i < Idx; i++) {
+        for (int i = 0; i < num_edges*0.125; i++) {
             int source = edges[i].source;
             int destination = edges[i].destination;
             int capacity = edges[i].capacity;
@@ -87,7 +87,103 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
                 flow[destination] = min(flow[Idx], capacity);
             }
         }
-        for (int i = Idx; i < num_edges; i++) {
+        for (int i = num_edges*0.125; i < num_edges*0.25; i++) {
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
+
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
+            }
+        }
+        for (int i = num_edges*0.25; i < num_edges*0.375; i++) {
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
+
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
+            }
+        }
+        for (int i = num_edges*0.375; i < num_edges*0.5; i++) {
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
+
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
+            }
+        }
+        for (int i = num_edges*0.5; i < num_edges*0.625; i++) {
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
+
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
+            }
+        }
+        for (int i = num_edges*0.625; i < num_edges*0.75; i++) {
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
+
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
+            }
+        }
+        for (int i = num_edges*0.75; i < num_edges*0.875; i++) {
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
+
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
+            }
+        }
+        for (int i = num_edges*0.875; i < num_edges; i++) {
             int source = edges[i].source;
             int destination = edges[i].destination;
             int capacity = edges[i].capacity;
