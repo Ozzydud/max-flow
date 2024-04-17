@@ -29,7 +29,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
     string line;
     int source, destination;
-    //int counter = 0;
+    int numberOfEdges = 0;
 
     float capacity;
     cout << "before loop" << endl;
@@ -55,6 +55,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
     	exit(EXIT_FAILURE);
 	}
 
+	numberOfEdges++;
 	//cout << "after scaling" << endl;
         residual[source * total_nodes + destination] = scaledCapacity;
         //cout << "adding to residual" << endl;
@@ -65,7 +66,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
        
     }
     
-
+    cout << "Number of edges in graph is: " << numberOfEdges << endl;
     file.close();
 }
 
@@ -131,7 +132,7 @@ int main() {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
-    int total_nodes = 5; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 10000; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
     
     cudaEvent_t start, stop; // Declare start and stop events
@@ -159,7 +160,7 @@ int main() {
 
 
 
-    readInput("/home/matthew.jezek/max-flow/main/custom_output_graph.mtx", total_nodes, residual);
+    readInput("/home/matthew.jezek/max-flow/main/custom_output_graph1.mtx", total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
@@ -263,10 +264,10 @@ int main() {
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
 	//cout << path_flow << endl;
 	counter++;
-	cout << "Counter is: " << counter << endl;
+	//cout << "Counter is: " << counter << endl;
 
     } while(found_augmenting_path); //found_augmenting_path);
-    cout << "hi6" << endl;
+    cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);

@@ -7,17 +7,17 @@ from scipy.sparse import csr_matrix
 G = nx.Graph()
 
 # Add X nodes
-G.add_nodes_from(range(5))
+G.add_nodes_from(range(10000))
 
 # Function to generate a random weight
 def generate_weight():
-    return round(random.uniform(0.1, 1.0), 3)  # You can adjust the range as needed
+    return round(random.uniform(0.1, 1.0), 8)  # You can adjust the range as needed
 
 # Add X random edges with weights
-while G.number_of_edges() < 10:
+while G.number_of_edges() < 2000000:
     # Select two random nodes
-    u = random.randint(0, 4)
-    v = random.randint(0, 4)
+    u = random.randint(0, 9999)
+    v = random.randint(0, 9999)
     
     # Add an edge if it does not already exist and is not a self-loop
     if u != v and not G.has_edge(u, v):
@@ -28,7 +28,7 @@ print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edge
 
 # Define source and sink
 source = 0  # First node
-sink = 4  # Last node
+sink = 9999  # Last node
 
 # Create a custom function to write the matrix
 def write_matrix(G, filename):
@@ -37,7 +37,7 @@ def write_matrix(G, filename):
         edges = G.number_of_edges()
         file.write(f"%%MatrixMarket matrix coordinate real symmetric\n%\n{n} {n} {edges}\n")
         for u, v, data in G.edges(data=True):
-            file.write(f"{u+1} {v+1} {data['weight']:.3f}\n")  # Adjust format here
+            file.write(f"{u+1} {v+1} {data['weight']:.8f}\n")  # Adjust format here
 
 
 # Check if there is a path from source to sink
@@ -46,7 +46,7 @@ if nx.has_path(G, source, sink):
     #matrix = nx.to_scipy_sparse_array(G, nodelist=sorted(G.nodes()), weight='weight', dtype=float, format='csr')
     # Save the matrix to a .mtx file
     #mmwrite("output_graph.mtx", matrix)
-    write_matrix(G, "custom_output_graph.mtx")
+    write_matrix(G, "custom_output_graph1.mtx")
 else:
     print("No path from the source to the sink.")
 
