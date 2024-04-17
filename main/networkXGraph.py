@@ -56,7 +56,7 @@ if nx.has_path(G, source, sink):
     #matrix = nx.to_scipy_sparse_array(G, nodelist=sorted(G.nodes()), weight='weight', dtype=float, format='csr')
     # Save the matrix to a .mtx file
     #mmwrite("output_graph.mtx", matrix)
-    write_matrix(G, "custom_output_graph_test.mtx")
+    write_matrix(G, output_filename)
 else:
     print("No path from the source to the sink.")
 
