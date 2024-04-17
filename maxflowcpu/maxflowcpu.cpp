@@ -7,7 +7,7 @@
 using namespace std;
 
 // Number of vertices in given graph
-#define V 11397
+#define V 30000
 
 #define INF 1e9
 
@@ -84,7 +84,7 @@ int fordFulkerson(vector<vector<int>>& graph, int s, int t)
         // Find minimum residual capacity of the edges along
         // the path filled by BFS. Or we can say find the
         // maximum flow through the path found.
-        int path_flow = INT_MAX;
+        int path_flow = INT8_MAX;
         for (int v = t; v != s; v = parent[v])
         {
             int u = parent[v];
@@ -151,7 +151,7 @@ int main()
     vector<vector<int>> graph(V, vector<int>(V, 0));
 
     // Read the graph from .mtx file
-    const char *filename = "data/cage10.mtx";
+    const char *filename = "/home/matthew.jezek/max-flow/main/30k200k";
     readInput(filename, graph);
 
     // Convert graph to rGraph
