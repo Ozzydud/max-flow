@@ -5,12 +5,13 @@ from scipy.sparse import csr_matrix
 import sys
 
 # Handling command-line arguments
-if len(sys.argv) != 3:
-    print("Usage: python script.py <number_of_nodes> <number_of_edges>")
+if len(sys.argv) != 4:
+    print("Usage: python script.py <number_of_nodes> <number_of_edges> <output_filename>")
     sys.exit(1)
 
 number_of_nodes = int(sys.argv[1])
 number_of_edges = int(sys.argv[2])
+output_filename = sys.argv[3]
 
 # Create an empty undirected graph
 G = nx.Graph()
