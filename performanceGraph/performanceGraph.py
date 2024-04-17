@@ -1,8 +1,7 @@
-import matplotlib.pyplot as plt
 import matplotlib
-
 # Use Agg backend for non-interactive mode
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 def plot_nodes_edges_time(nodes_edges, cpu_times, gpu_times, output_file):
     # Assuming nodes_edges, cpu_times, and gpu_times are lists of corresponding values
