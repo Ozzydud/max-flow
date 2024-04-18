@@ -73,7 +73,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int sink, int* locks, int chunkSize){
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
     int blockStartIdx = blockIdx.x * chunkSize;
-    int blockEndIdx = min((blockIdx.x+1)*chunksize, vertices);
+    int blockEndIdx = min((blockIdx.x+1)*chunkSize, vertices);
 
         for (int Idx = blockStartIdx + threadIdx.x; Idx < blockEndIdx; Idx += blockDim.x) {
         if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
