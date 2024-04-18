@@ -137,7 +137,10 @@ int main() {
 
 
     float avgBFSTime = 0;
-
+    int bfsCounter = 0;
+    cudaEvent_t startEvent, stopEvent;
+    cudaEventCreate(&startEvent);
+    cudaEventCreate(&stopEvent);
 
 
 
@@ -149,6 +152,7 @@ int main() {
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start);
+
 
     // Allocating memory for a square matrix representing the graph
     //residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
@@ -241,12 +245,19 @@ int main() {
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
 	    //cout << "hi2" << endl;
         while(!sink_reachable(frontier, total_nodes, sink)){
-        auto start = std::chrono::high_resolution_clock::now();
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity,  d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
-        auto end = std::chrono::high_resolution_clock::now();
+        cudaEventRecord(startEvent, 0);
 
-        avgBFSTime += end-start;
-        //cout << "hi3" << endl;
+        // Run BFS kernel
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        bfsCounter++;
+        // Stop recording the event
+        cudaEventRecord(stopEvent, 0);
+        cudaEventSynchronize(stopEvent);
+
+        // Calculate elapsed time
+        float bfsmili = 0.0f;
+        cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
+        totalBFSTime += bfsmili;
         
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
@@ -284,7 +295,7 @@ int main() {
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&milliseconds, start, stop);
     cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
-    cout << "Average BFS time is: " << avgBFSTime / counter << "ms\n";
+    cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
     
