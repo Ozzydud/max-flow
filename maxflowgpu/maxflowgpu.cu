@@ -296,6 +296,7 @@ int main() {
     cudaEventElapsedTime(&milliseconds, start, stop);
     cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
+    cout << "Total time BFS is: " << avgBFSTime << "ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
     
