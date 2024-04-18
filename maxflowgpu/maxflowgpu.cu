@@ -257,7 +257,7 @@ int main() {
         // Calculate elapsed time
         float bfsmili = 0.0f;
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
-        totalBFSTime += bfsmili;
+        avgBFSTime += bfsmili;
         
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
