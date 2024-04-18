@@ -134,6 +134,13 @@ int main() {
     }
     int total_nodes = 1107; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
+
+
+    float avgBFSTime = 0;
+
+
+
+
     
     cudaEvent_t start, stop; // Declare start and stop events
     float milliseconds = 0; // Variable to store elapsed time in milliseconds
@@ -234,7 +241,11 @@ int main() {
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
 	    //cout << "hi2" << endl;
         while(!sink_reachable(frontier, total_nodes, sink)){
+        auto start = std::chrono::high_resolution_clock::now();
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity,  d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        auto end = std::chrono::high_resolution_clock::now();
+
+        avgBFSTime += end-start;
         //cout << "hi3" << endl;
         
 
@@ -273,6 +284,7 @@ int main() {
     cudaEventSynchronize(stop);
     cudaEventElapsedTime(&milliseconds, start, stop);
     cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
+    cout << "Average BFS time is: " << avgBFSTime / counter << "ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
     
