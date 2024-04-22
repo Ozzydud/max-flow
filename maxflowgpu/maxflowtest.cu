@@ -194,7 +194,7 @@ int main() {
             parent[i] = -1; // Initialize parent array
             flow[i] = INF;  // Initialize flow array with INF
             locks[i] = 0;
-            if (i == source) {
+            if (i == sink) {
                 frontier[i] = true;
             } else {
                 frontier[i] = false;
