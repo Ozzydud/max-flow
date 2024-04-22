@@ -72,21 +72,27 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
         visited[Idx] = true;
 
         for (int i = num_edges - 1; i >= 0; i--) { // Traverse edges from bottom to top
-            int source = edges[i].source;
-            int destination = edges[i].destination;
-            int capacity = edges[i].capacity;
+    int source = edges[i].source;
+    int destination = edges[i].destination;
+    int capacity = edges[i].capacity;
 
-            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
-                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
-                    continue;
-                }
+    if (source == Idx) {
+        if (destination < Idx)
+            break;
 
-                frontier[destination] = true;
-                locks[destination] = 0;
-                parent[destination] = Idx;
-                flow[destination] = min(flow[Idx], capacity);
+        if (!frontier[destination] && !visited[destination] && capacity > 0) {
+            if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
+                continue;
             }
+
+            frontier[destination] = true;
+            locks[destination] = 0;
+            parent[destination] = Idx;
+            flow[destination] = min(flow[Idx], capacity);
         }
+    }
+}
+
     }
 }
 
@@ -188,7 +194,7 @@ int main() {
             parent[i] = -1; // Initialize parent array
             flow[i] = INF;  // Initialize flow array with INF
             locks[i] = 0;
-            if (i == source) {
+            if (i == sink) {
                 frontier[i] = true;
             } else {
                 frontier[i] = false;
