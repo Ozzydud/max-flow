@@ -136,7 +136,7 @@ int main() {
         return 1;
     }
 
-    int total_nodes = 1107; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
 
     float avgBFSTime = 0;
     int bfsCounter = 0;
@@ -155,7 +155,7 @@ int main() {
 		    cudaEventRecord(start);
 
     vector<Edge> edges;
-    readInput("data/gre_1107.mtx", total_nodes, edges);
+    readInput("data/cage11.mtx", total_nodes, edges);
     cout << "data read" << endl;
 
     int source = 0;
