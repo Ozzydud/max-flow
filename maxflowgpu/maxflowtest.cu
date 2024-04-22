@@ -72,27 +72,21 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
         visited[Idx] = true;
 
         for (int i = num_edges - 1; i >= 0; i--) { // Traverse edges from bottom to top
-    int source = edges[i].source;
-    int destination = edges[i].destination;
-    int capacity = edges[i].capacity;
+            int source = edges[i].source;
+            int destination = edges[i].destination;
+            int capacity = edges[i].capacity;
 
-    if (source == Idx) {
-        if (destination < Idx)
-            break; // Since edges are sorted by destination, no need to continue further
+            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
+                    continue;
+                }
 
-        if (!frontier[destination] && !visited[destination] && capacity > 0) {
-            if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
-                continue;
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = Idx;
+                flow[destination] = min(flow[Idx], capacity);
             }
-
-            frontier[destination] = true;
-            locks[destination] = 0;
-            parent[destination] = Idx;
-            flow[destination] = min(flow[Idx], capacity);
         }
-    }
-}
-
     }
 }
 
