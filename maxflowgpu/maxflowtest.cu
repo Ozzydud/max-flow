@@ -67,37 +67,31 @@ void readInput(const char* filename, int total_nodes, vector<Edge>& edges) {
 __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (Idx >= vertices || frontier[Idx] == false || frontier[sink]) return;
-
-    // Load frontier and visited flags into shared memory
-    __shared__ bool s_frontier[BLOCK_SIZE];
-    __shared__ bool s_visited[BLOCK_SIZE];
-    s_frontier[threadIdx.x] = frontier[Idx];
-    s_visited[threadIdx.x] = visited[Idx];
-    __syncthreads();
-
-    if (s_frontier[threadIdx.x] == true) {
-        // Mark current node as visited
+    if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
+        frontier[Idx] = false;
         visited[Idx] = true;
 
-        for (int i = num_edges - 1; i >= 0; i--) {
-            int source = edges[i].source;
-            int destination = edges[i].destination;
-            int capacity = edges[i].capacity;
+        for (int i = num_edges - 1; i >= 0; i--) { // Traverse edges from bottom to top
+        int source = edges[i].source;
+        int destination = edges[i].destination;
+        int capacity = edges[i].capacity;
 
-            if (source == Idx && destination >= Idx && !s_visited[destination] && capacity > 0) {
-                // Attempt to acquire lock on destination node
-                if (atomicCAS(locks + destination, 0 , 1) == 0) {
-                    // Update parent, flow, and frontier
-                    parent[destination] = Idx;
-                    flow[destination] = min(flow[Idx], capacity);
-                    frontier[destination] = true;
-                }
+        if (source == Idx) {
+            if (destination < Idx)
+                break;
+
+        if (!frontier[destination] && !visited[destination] && capacity > 0) {
+            if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
+                continue;
             }
+
+            frontier[destination] = true;
+            locks[destination] = 0;
+            parent[destination] = Idx;
+            flow[destination] = min(flow[Idx], capacity);
         }
     }
 }
-
 
     }
 }
