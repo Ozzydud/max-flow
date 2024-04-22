@@ -319,6 +319,8 @@ int main() {
     // Clean up events
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
+    cudaEventDestroy(stopEvent);
+    cudaEventDestroy(startEvent);
 
     return 0;
 }
