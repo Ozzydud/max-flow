@@ -206,10 +206,8 @@ int main() {
          
         while (!sink_reachable(frontier, total_nodes, sink)) {
             cudaEventRecord(startEvent, 0);
-
-        // Run BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
-        bfsCounter++;
+            cudaBFS<<<grid_size, block_size>>>(d_edges, edges.size(), d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+            bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
         cudaEventSynchronize(stopEvent);
