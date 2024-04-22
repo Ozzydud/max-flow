@@ -78,7 +78,7 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
 
     if (source == Idx) {
         if (destination < Idx)
-            break; // Since edges are sorted by destination, no need to continue further
+            break;
 
         if (!frontier[destination] && !visited[destination] && capacity > 0) {
             if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
