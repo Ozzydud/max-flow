@@ -64,31 +64,32 @@ void readInput(const char* filename, int total_nodes, vector<Edge>& edges) {
     file.close();
 }
 
-__global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
-    int Idx = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void cudaBFS(const Edge* edges, const int num_edges, int* parent, int* flow, bool* frontier, bool* visited, const int vertices, const int sink, int* locks) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
-        frontier[Idx] = false;
-        visited[Idx] = true;
+    if (tid < vertices && frontier[tid]) {
+        visited[tid] = true;
+        frontier[tid] = false;
 
-        for (int i = num_edges - 1; i >= 0; i--) { // Traverse edges from bottom to top
+        for (int i = tid * num_edges; i < (tid + 1) * num_edges; ++i) {
+            if (i >= num_edges) break; // Ensure we don't exceed the number of edges
+
             int source = edges[i].source;
             int destination = edges[i].destination;
             int capacity = edges[i].capacity;
 
-            if (source == Idx && !frontier[destination] && !visited[destination] && capacity > 0) {
-                if(atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]){
-                    continue;
+            if (source == tid && !visited[destination] && capacity > 0) {
+                if (atomicCAS(locks + destination, 0, 1) == 0) {
+                    parent[destination] = tid;
+                    flow[destination] = min(flow[tid], capacity);
+                    frontier[destination] = true;
                 }
-
-                frontier[destination] = true;
                 locks[destination] = 0;
-                parent[destination] = Idx;
-                flow[destination] = min(flow[Idx], capacity);
             }
         }
     }
 }
+
 
 __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, Edge* edges, int num_edges, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
