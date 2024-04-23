@@ -194,7 +194,7 @@ int main() {
             parent[i] = -1; // Initialize parent array
             flow[i] = INF;  // Initialize flow array with INF
             locks[i] = 0;
-            if (i == sink) {
+            if (i == source) {
                 frontier[i] = true;
             } else {
                 frontier[i] = false;
@@ -210,7 +210,7 @@ int main() {
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
          
-        while (!sink_reachable(frontier, total_nodes, source)) {
+        while (!sink_reachable(frontier, total_nodes, sink)) {
             cudaEventRecord(startEvent, 0);
             cudaBFS<<<grid_size, block_size>>>(d_edges, edges.size(), d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
             bfsCounter++;
