@@ -269,6 +269,8 @@ int main() {
     cout << "Counter is: " << counter << endl;
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
+    cout << "Average AUG time is " << avgAUGTime << "ms\n";
+    cout << "Total AUG time is: " << avgAUGTime / augCounter
 
     cudaEventRecord(stop);
         cudaEventSynchronize(stop);
