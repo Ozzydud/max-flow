@@ -134,6 +134,13 @@ int main() {
     cudaEventCreate(&startEvent);
     cudaEventCreate(&stopEvent);
 
+
+    float avgAUGTime = 0;
+    int augCounter = 0;
+    cudaEvent_t startEvent2, stopEvent2;
+    cudaEventCreate(&startEvent2);
+    cudaEventCreate(&stopEvent2);
+
 	
 
     cudaEvent_t start, stop; // Declare start and stop events
@@ -245,7 +252,17 @@ int main() {
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
         // Launch augmenting path kernel
+        cudaEventRecord(startEvent2, 0);
         cudaAugment_path<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_edges, edges.size(), path_flow);
+            augCounter++;
+        // Stop recording the event
+        cudaEventRecord(stopEvent2, 0);
+        cudaEventSynchronize(stopEvent2);
+
+        // Calculate elapsed time
+        float augmili = 0.0f;
+        cudaEventElapsedTime(&augmili, startEvent2, stopEvent2);
+        avgAUGTime += augmili;
         counter++;
     } while (found_augmenting_path);
     cout << "Max flor is: " << max_flow << endl;
@@ -278,6 +295,9 @@ int main() {
     cudaEventDestroy(stop);
     cudaEventDestroy(stopEvent);
     cudaEventDestroy(startEvent);
+
+    cudaEventDestroy(stopEvent2);
+    cudaEventDestroy(startEvent2);
 
     return 0;
 }
