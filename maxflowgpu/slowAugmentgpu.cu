@@ -145,6 +145,7 @@ int main() {
     int* d_r_capacity, * d_parent, * d_flow;
     bool* d_frontier, * d_visited;
     int* d_locks;
+    cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
     cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
     cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
@@ -206,7 +207,7 @@ int main() {
             residual[residual_capacity_index] -= path_flow;
             residual[reverse_residual_capacity_index] += path_flow;
         }
-        
+
             augCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent2, 0);
