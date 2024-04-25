@@ -315,7 +315,7 @@ int main() {
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
     cout << "Average AUG time is " << avgAUGTime << "ms\n";
-    cout << "Total AUG time is: " << avgAUGTime / augCounter
+    cout << "Total AUG time is: " << avgAUGTime / augCounter << "ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
     
