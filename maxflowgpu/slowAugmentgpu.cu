@@ -279,10 +279,11 @@ int main() {
 
     for(int i = sink; i != source; i = parent[i]){
         if(do_change_capacity[i]){
-        r_capacity[parent[i] * total_nodes + i] -= path_flow;
-        r_capacity[i * total_nodes + parent[i]] += path_flow; 
+        capacity[parent[i] * total_nodes + i] -= path_flow;
+        capacity[i * total_nodes + parent[i]] += path_flow; 
         }
     }
+    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
 	//cout << path_flow << endl;
 	counter++;
 	//cout << "Counter is: " << counter << endl;
