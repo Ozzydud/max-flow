@@ -93,16 +93,12 @@ int fordFulkerson(vector<vector<int>>& graph, int s, int t)
 
         // update residual capacities of the edges and
         // reverse edges along the path
-        clock_t start = clock(); // Start timing
         for (int v = t; v != s; v = parent[v])
         {
             int u = parent[v];
             rGraph[u][v] -= path_flow;
             rGraph[v][u] += path_flow;
         }
-        clock_t end = clock(); // Stop timing
-        double duration = double(end - start) / CLOCKS_PER_SEC;
-        cout << "Time taken by augmenting paths update: " << duration << " seconds" << endl;
 
         // Add path flow to overall flow
         max_flow += path_flow;
