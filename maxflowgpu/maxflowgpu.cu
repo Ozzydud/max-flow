@@ -153,6 +153,12 @@ int main() {
     cudaEventCreate(&stop);
     cudaEventRecord(start);
 
+    float avgAUGTime = 0;
+    int augCounter = 0;
+    cudaEvent_t startEvent2, stopEvent2;
+    cudaEventCreate(&startEvent2);
+    cudaEventCreate(&stopEvent2);
+
 
     // Allocating memory for a square matrix representing the graph
     //residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
@@ -283,7 +289,18 @@ int main() {
 
 	//cout << "hi4" << endl;
         // Launch BFS kernel
+        cudaEventRecord(startEvent2, 0);
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+
+             augCounter++;
+        // Stop recording the event
+        cudaEventRecord(stopEvent2, 0);
+        cudaEventSynchronize(stopEvent2);
+
+        // Calculate elapsed time
+        float augmili = 0.0f;
+        cudaEventElapsedTime(&augmili, startEvent2, stopEvent2);
+        avgAUGTime += augmili;
 	//cout << path_flow << endl;
 	counter++;
 	//cout << "Counter is: " << counter << endl;
@@ -297,6 +314,8 @@ int main() {
     cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
+    cout << "Average AUG time is " << avgAUGTime << "ms\n";
+    cout << "Total AUG time is: " << avgAUGTime / augCounter
 
     cout << "Maximum Flow: " << max_flow << endl;
     
@@ -321,6 +340,9 @@ int main() {
     cudaEventDestroy(stop);
     cudaEventDestroy(stopEvent);
     cudaEventDestroy(startEvent);
+
+    cudaEventDestroy(stopEvent2);
+    cudaEventDestroy(startEvent2);
 
     return 0;
 }
