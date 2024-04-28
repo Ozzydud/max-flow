@@ -63,7 +63,7 @@ void readInput(const char* filename, int total_nodes, vector<Edge>& edges) {
     cout << "Number of edges in graph is: " << numberOfEdges << endl;
     file.close();
 }
-
+/*
 __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -95,6 +95,35 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
 
     }
 }
+*/
+
+__global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x; // Thread ID
+    int stride = gridDim.x * blockDim.x; // Total number of threads
+
+    for (int i = tid; i < num_edges; i += stride) {
+        int source = edges[i].source;
+        int destination = edges[i].destination;
+        int capacity = edges[i].capacity;
+
+        if (!frontier[sink] && source < vertices && frontier[source]) {
+            frontier[source] = false;
+            visited[source] = true;
+
+            if (destination < vertices && !frontier[destination] && !visited[destination] && capacity > 0) {
+                if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
+                    continue;
+                }
+
+                frontier[destination] = true;
+                locks[destination] = 0;
+                parent[destination] = source;
+                flow[destination] = min(flow[source], capacity);
+            }
+        }
+    }
+}
+
 
 __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, Edge* edges, int num_edges, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
