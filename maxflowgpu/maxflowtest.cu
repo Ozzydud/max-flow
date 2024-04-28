@@ -245,7 +245,7 @@ int main() {
          
         while (!sink_reachable(frontier, total_nodes, sink)) {
             cudaEventRecord(startEvent, 0);
-            cudaBFS<<<grid_size, block_size>>>(d_edges, edges.size(), d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+            cudaBFS<<<grid_size, block_size>>>(d_edges, edges.size(), d_parent, d_flow, d_frontier, d_visited, total_nodes, sink);
             bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
