@@ -63,7 +63,7 @@ void readInput(const char* filename, int total_nodes, vector<Edge>& edges) {
     cout << "Number of edges in graph is: " << numberOfEdges << endl;
     file.close();
 }
-
+/*
 __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -95,6 +95,32 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
 
     }
 }
+*/
+
+__global__ void cudaBFS(const Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    for (int v = vertices - 1 - tid; v >= 0; v -= stride) {
+        if (frontier[v]) {
+            frontier[v] = false;
+            visited[v] = true;
+
+            for (int i = num_edges - 1; i >= 0; --i) {
+                int source = edges[i].source;
+                int destination = edges[i].destination;
+                int capacity = edges[i].capacity;
+
+                if (source == v && !visited[destination] && capacity > 0) {
+                    parent[destination] = v;
+                    flow[destination] = min(flow[v], capacity);
+                    frontier[destination] = true;
+                }
+            }
+        }
+    }
+}
+
 
 __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, Edge* edges, int num_edges, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
