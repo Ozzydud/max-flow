@@ -106,13 +106,6 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
 }
 
 
-__global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, int* r_capacity, int path_flow){
-    int Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if(Idx < total_nodes && do_change_capacity[Idx]){
-        r_capacity[parent[Idx] * total_nodes + Idx] -= path_flow;
-        r_capacity[Idx * total_nodes + parent[Idx]] += path_flow; 
-    }    
-}
 
 
 bool sink_reachable(bool* frontier, int total_nodes, int sink){
@@ -152,6 +145,7 @@ int main() {
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start);
+
 
     float avgAUGTime = 0;
     int augCounter = 0;
@@ -289,10 +283,16 @@ int main() {
 
 	//cout << "hi4" << endl;
         // Launch BFS kernel
-        cudaEventRecord(startEvent2, 0);
-        cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
-
-             augCounter++;
+    cudaEventRecord(startEvent2, 0);
+    for(int i = sink; i != source; i = parent[i]){
+        if(do_change_capacity[i]){
+        residual[parent[i] * total_nodes + i] -= path_flow;
+        residual[i * total_nodes + parent[i]] += path_flow; 
+        }
+    }
+    
+    cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
+        augCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent2, 0);
         cudaEventSynchronize(stopEvent2);
