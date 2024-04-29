@@ -71,10 +71,40 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
         frontier[Idx] = false;
         visited[Idx] = true;
 
-        for (int i = num_edges - 1; i >= 0; i--) { // Traverse edges from bottom to top
-        int source = edges[i].source;
-        int destination = edges[i].destination;
-        int capacity = edges[i].capacity;
+        // Perform binary search to find the range of edges for the current node
+        int left = 0;
+        int right = num_edges - 1;
+        int start_edge = -1; // Start index of edges for the current node
+        int end_edge = -1;   // End index of edges for the current node
+
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (edges[mid].destination == Idx) {
+                start_edge = mid;
+                break;
+            } else if (edges[mid].destination < Idx) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        if (start_edge == -1) {
+            // No outgoing edges for the current node
+            return;
+        }
+
+        // Find the end index of edges for the current node
+        end_edge = start_edge;
+        while (end_edge < num_edges && edges[end_edge].destination == Idx) {
+            end_edge++;
+        }
+
+        // Process edges for the current node using binary search range
+        for (int i = start_edge; i < end_edge; i++) {
+            int source = edges[i].source;
+            int capacity = edges[i].capacity;
+            int destination = edges[i].destination;
 
         if (source == Idx) {
             if (destination < Idx)
@@ -144,12 +174,12 @@ int main() {
 	
 
     cudaEvent_t start, stop; // Declare start and stop events
-        float milliseconds = 0; // Variable to store elapsed time in milliseconds
+    float milliseconds = 0; // Variable to store elapsed time in milliseconds
 
 	    // Initialize CUDA events
-	    cudaEventCreate(&start);
-	        cudaEventCreate(&stop);
-		    cudaEventRecord(start);
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start);
 
     vector<Edge> edges;
     readInput("data/cage11.mtx", total_nodes, edges);
