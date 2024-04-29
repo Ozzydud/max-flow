@@ -191,7 +191,7 @@ int edmondsKarp(const char* filename, int total_nodes) {
 
     bool found_augmenting_path;
     int max_flow = 0;
-    int block_size = 1024;
+    int block_size = 512;
     int grid_size = ceil(total_nodes * 1.0 / block_size);
 
     int counter = 0;
@@ -270,7 +270,7 @@ int edmondsKarp(const char* filename, int total_nodes) {
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
     cout << "Average AUG time is " << avgAUGTime << "ms\n";
-    cout << "Total AUG time is: " << avgAUGTime / augCounter << "ms\n"
+    cout << "Total AUG time is: " << avgAUGTime / augCounter << "ms\n";
 
     cudaEventRecord(stop);
         cudaEventSynchronize(stop);
@@ -305,6 +305,7 @@ int edmondsKarp(const char* filename, int total_nodes) {
 }
 
 int main(){
+    -
     edmondsKarp("data/cage11.mtx", 39082);
 
 
