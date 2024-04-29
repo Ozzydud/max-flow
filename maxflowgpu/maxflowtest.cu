@@ -76,8 +76,9 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
         int destination = edges[i].destination;
         int capacity = edges[i].capacity;
 
-        if (!frontier[parent[i]]) {    
+        if (!frontier[parent[i]])
             break;
+            
 
         if (!frontier[destination] && !visited[destination] && capacity > 0) {
             if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
@@ -93,7 +94,7 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
 }
 
     }
-}
+
 
 __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, Edge* edges, int num_edges, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
