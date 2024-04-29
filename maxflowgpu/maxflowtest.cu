@@ -119,14 +119,14 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink) {
         return true;
 }
 
-int main() {
+int edmondsKarp(const char* filename, int total_nodes) {
     cudaError_t cudaStatus = cudaSetDevice(4);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
 
-    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
 
     float avgBFSTime = 0;
     int bfsCounter = 0;
@@ -152,7 +152,7 @@ int main() {
 	cudaEventRecord(start);
 
     vector<Edge> edges;
-    readInput("data/cage11.mtx", total_nodes, edges);
+    readInput(filename, total_nodes, edges);
     cout << "data read" << endl;
 
     int source = 0;
@@ -302,4 +302,11 @@ int main() {
     cudaEventDestroy(startEvent2);
 
     return 0;
+}
+
+int main(){
+    edmondsKarp("data/cage11.mtx", 39082);
+
+
+
 }
