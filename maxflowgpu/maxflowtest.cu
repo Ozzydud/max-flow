@@ -94,7 +94,7 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
 }
 
     }
-}
+
 
 __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, Edge* edges, int num_edges, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
