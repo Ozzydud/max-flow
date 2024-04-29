@@ -64,7 +64,7 @@ void readInput(const char* filename, int total_nodes, vector<Edge>& edges) {
     file.close();
 }
 
-__global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks, int middle_node) {
+__global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
@@ -270,7 +270,7 @@ int main() {
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
     cout << "Average AUG time is " << avgAUGTime << "ms\n";
-    cout << "Total AUG time is: " << avgAUGTime / augCounter
+    cout << "Total AUG time is: " << avgAUGTime / augCounter << "ms\n"
 
     cudaEventRecord(stop);
         cudaEventSynchronize(stop);
