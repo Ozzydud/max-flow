@@ -64,47 +64,17 @@ void readInput(const char* filename, int total_nodes, vector<Edge>& edges) {
     file.close();
 }
 
-__global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks) {
+__global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int sink, int* locks, int middle_node) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
 
-        // Perform binary search to find the range of edges for the current node
-        int left = 0;
-        int right = num_edges - 1;
-        int start_edge = -1; // Start index of edges for the current node
-        int end_edge = -1;   // End index of edges for the current node
-
-        while (left <= right) {
-            int mid = left + (right - left) / 2;
-            if (edges[mid].destination == Idx) {
-                start_edge = mid;
-                break;
-            } else if (edges[mid].destination < Idx) {
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-
-        if (start_edge == -1) {
-            // No outgoing edges for the current node
-            return;
-        }
-
-        // Find the end index of edges for the current node
-        end_edge = start_edge;
-        while (end_edge < num_edges && edges[end_edge].destination == Idx) {
-            end_edge++;
-        }
-
-        // Process edges for the current node using binary search range
-        for (int i = start_edge; i < end_edge; i++) {
-            int source = edges[i].source;
-            int capacity = edges[i].capacity;
-            int destination = edges[i].destination;
+        for (int i = num_edges - 1; i >= 0; i--) { // Traverse edges from bottom to top
+        int source = edges[i].source;
+        int destination = edges[i].destination;
+        int capacity = edges[i].capacity;
 
         if (source == Idx) {
             if (destination < Idx)
@@ -300,7 +270,7 @@ int main() {
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
     cout << "Average AUG time is " << avgAUGTime << "ms\n";
-    cout << "Total AUG time is: " << avgAUGTime / augCounter << "ms\n";
+    cout << "Total AUG time is: " << avgAUGTime / augCounter
 
     cudaEventRecord(stop);
         cudaEventSynchronize(stop);
