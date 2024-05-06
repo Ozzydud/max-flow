@@ -46,7 +46,10 @@ def write_matrix(G, filename):
         n = G.number_of_nodes()
         edges = G.number_of_edges()
         file.write(f"%%MatrixMarket matrix coordinate real symmetric\n%\n{n} {n} {edges}\n")
-        for u, v, data in G.edges(data=True):
+
+        sorted_edges = sorted(G.edges(data=True), key=lambda x: x[1])
+
+        for u, v, data in sorted_edges:
             file.write(f"{u+1} {v+1} {data['weight']:.8f}\n")  # Adjust format here
 
 
