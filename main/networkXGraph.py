@@ -34,7 +34,7 @@ while G.number_of_edges() < number_of_edges:
         weight = generate_weight()
         G.add_edge(u, v, weight=weight)
 
-print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
+print("The graph has {} nodes and {} edges.".format(G.number_of_nodes(), G.number_of_edges()))
 
 # Define source and sink
 source = 0  # First node
