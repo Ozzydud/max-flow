@@ -50,7 +50,8 @@ def write_matrix(G, filename):
         sorted_edges = sorted(G.edges(data=True), key=lambda x: x[1])
 
         for u, v, data in sorted_edges:
-            file.write(f"{u+1} {v+1} {data['weight']:.8f}\n")  # Adjust format here
+            file.write("{} {} {:.8f}\n".format(u+1, v+1, data['weight']))
+  # Adjust format here
 
 
 # Check if there is a path from source to sink
