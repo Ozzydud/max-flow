@@ -1,13 +1,15 @@
 #include <iostream>
 #include <fstream>
+#include <tuple>
 #include <sstream>
 #include <vector>
 #include <queue>
 #include <ctime> // For timing
 using namespace std;
 
-// Number of vertices in given graph
-#define V 30000
+// Number of vertices in given graph 39082
+#define V 39082
+
 
 #define INF 1e9
 
@@ -70,8 +72,10 @@ pair<bool, double> bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& p
     return make_pair(false, totalTime);
 }
 
-tuple<int, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int t)
+tuple<int, double, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int t)
 {
+    double setupTime = 0;	
+    clock_t start1 = clock();
     // Create a residual graph and fill the residual graph
     // with given capacities in the original graph as
     // residual capacities in residual graph
@@ -83,11 +87,10 @@ tuple<int, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int 
             rGraph[u][v] = graph[u][v];
         }
     }
-
+    double duration = measureTime(start1); 
+    setupTime += duration;
     vector<int> parent(V); // This vector is filled by BFS and to
                            // store path
-
-    clock_t start = clock(); // Start timing
 
     int max_flow = 0; // There is no flow initially
 
@@ -102,7 +105,7 @@ tuple<int, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int 
         bfsTime += result.second;
         if (!result.first)
             break;
-
+	clock_t start = clock();
         // Find minimum residual capacity of the edges along
         // the path filled by BFS. Or we can say find the
         // maximum flow through the path found.
@@ -127,8 +130,8 @@ tuple<int, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int 
         augmentingPathsTime += measureTime(start); // End timing for augmenting paths
     }
 
-    double duration = measureTime(start); // End timing for entire function
-    return make_tuple(max_flow, bfsTime, augmentingPathsTime); // Return max flow and timings
+   
+    return make_tuple(max_flow, bfsTime, augmentingPathsTime, setupTime); // Return max flow and timings
 }
 
 // Read input from .mtx file
@@ -175,19 +178,21 @@ pair<vector<vector<int>>, double> readInput(const char *filename)
 // Driver program to test above functions
 int main()
 {
+    clock_t start = clock();	
     // Read the graph from .mtx file
-    const char *filename = "/home/matthew.jezek/max-flow/main/30k200k";
+    const char *filename = "data/cage11.mtx";
     pair<vector<vector<int>>, double> readResult = readInput(filename);
-    cout << "Time taken for reading input: " << readResult.second << " seconds" << endl;
 
     // Convert graph to rGraph
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
     // Timing the fordFulkerson method
-    tuple<int, double, double> fordFulkersonResult = fordFulkerson(readResult.first, source, sink);
+    tuple<int, double, double, double> fordFulkersonResult = fordFulkerson(readResult.first, source, sink);
+    cout << "Init time: " << readResult.second + get<3>(fordFulkersonResult) << " seconds" << endl;
     cout << "Time taken by BFS: " << get<1>(fordFulkersonResult) << " seconds" << endl;
     cout << "Time taken by augmenting paths: " << get<2>(fordFulkersonResult) << " seconds" << endl;
+    cout << "Total time: " << measureTime(start) << " seconds" <<endl; 
     cout << "The maximum possible flow is " << get<0>(fordFulkersonResult) << endl;
 
     return 0;
