@@ -373,19 +373,19 @@ int edmondskarp(const char* filename, int total_nodes) {
 
 int main(){
     cout << "cage3" << endl; 
-    edmondskarp('cage3.mtx', 5);
+    edmondskarp("cage3.mtx", 5);
     cout << "cage3 end" << endl; 
 
     cout << "cage9" << endl; 
-    edmondskarp('data/cage9.mtx', 3534);
+    edmondskarp("data/cage9.mtx", 3534);
     cout << "cage9 end" << endl; 
 
     cout << "cage10" << endl; 
-    edmondskarp('data/cage10.mtx', 11397);
+    edmondskarp("data/cage10.mtx", 11397);
     cout << "cage10 end" << endl; 
 
     cout << "cage11" << endl; 
-    edmondskarp('data/cage11.mtx', 39082);
+    edmondskarp("data/cage11.mtx", 39082);
     cout << "cage11 end" << endl; 
     
     
