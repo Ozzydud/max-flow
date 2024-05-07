@@ -34,7 +34,7 @@ while G.number_of_edges() < number_of_edges:
         weight = generate_weight()
         G.add_edge(u, v, weight=weight)
 
-print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
+print("The graph has {} nodes and {} edges.".format(G.number_of_nodes(), G.number_of_edges()))
 
 # Define source and sink
 source = 0  # First node
@@ -45,9 +45,13 @@ def write_matrix(G, filename):
     with open(filename, 'w') as file:
         n = G.number_of_nodes()
         edges = G.number_of_edges()
-        file.write(f"%%MatrixMarket matrix coordinate real symmetric\n%\n{n} {n} {edges}\n")
-        for u, v, data in G.edges(data=True):
-            file.write(f"{u+1} {v+1} {data['weight']:.8f}\n")  # Adjust format here
+        file.write("%%MatrixMarket matrix coordinate real symmetric\n%\n{} {} {}\n".format(n, n, edges))
+
+        sorted_edges = sorted(G.edges(data=True), key=lambda x: x[1])
+
+        for u, v, data in sorted_edges:
+            file.write("{} {} {:.8f}\n".format(u+1, v+1, data['weight']))
+  # Adjust format here
 
 
 # Check if there is a path from source to sink

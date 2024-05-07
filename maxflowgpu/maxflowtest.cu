@@ -79,7 +79,7 @@ __global__ void cudaBFS(Edge* edges, int num_edges, int* parent, int* flow, bool
         if (source == Idx) {
             if (destination < Idx)
                 break;
-
+        
         if (!frontier[destination] && !visited[destination] && capacity > 0) {
             if (atomicCAS(locks + destination, 0 , 1) == 1 || frontier[destination]) {
                 continue;
@@ -119,14 +119,14 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink) {
         return true;
 }
 
-int main() {
+int edmondsKarp(const char* filename, int total_nodes) {
     cudaError_t cudaStatus = cudaSetDevice(4);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
 
-    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
 
     float avgBFSTime = 0;
     int bfsCounter = 0;
@@ -144,15 +144,15 @@ int main() {
 	
 
     cudaEvent_t start, stop; // Declare start and stop events
-        float milliseconds = 0; // Variable to store elapsed time in milliseconds
+    float milliseconds = 0; // Variable to store elapsed time in milliseconds
 
 	    // Initialize CUDA events
-	    cudaEventCreate(&start);
-	        cudaEventCreate(&stop);
-		    cudaEventRecord(start);
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start);
 
     vector<Edge> edges;
-    readInput("data/cage11.mtx", total_nodes, edges);
+    readInput(filename, total_nodes, edges);
     cout << "data read" << endl;
 
     int source = 0;
@@ -191,7 +191,7 @@ int main() {
 
     bool found_augmenting_path;
     int max_flow = 0;
-    int block_size = 1024;
+    int block_size = 512;
     int grid_size = ceil(total_nodes * 1.0 / block_size);
 
     int counter = 0;
@@ -302,4 +302,12 @@ int main() {
     cudaEventDestroy(startEvent2);
 
     return 0;
+}
+
+int main(){
+    
+    edmondsKarp("data/cage11.mtx", 39082);
+
+
+
 }
