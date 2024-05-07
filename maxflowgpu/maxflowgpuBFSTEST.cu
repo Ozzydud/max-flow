@@ -360,21 +360,18 @@ int edmondskarp(const char* filename, int total_nodes) {
 }
 
 int main(){
-    cout << "cage3" << endl; 
-    edmondskarp("cage3.mtx", 5);
-    cout << "cage3 end" << endl; 
+    cout << "1000x400500" << endl; 
+    edmondskarp("data/1000x400500.mtx", 1000);
+    cout << "1000x400500 end" << endl; 
 
-    cout << "cage9" << endl; 
-    edmondskarp("data/cage9.mtx", 3534);
-    cout << "cage9 end" << endl; 
+    cout << "5000x1250000" << endl; 
+    edmondskarp("data/5000x1250000.mtx", 5000);
+    cout << "5000x1250000 end" << endl; 
 
-    cout << "cage10" << endl; 
-    edmondskarp("data/cage10.mtx", 11397);
-    cout << "cage10 end" << endl; 
+    cout << "10000x2500000" << endl; 
+    edmondskarp("data/10000x2500000.mtx", 10000);
+    cout << "10000x2500000 end" << endl; 
 
-    cout << "cage11" << endl; 
-    edmondskarp("data/cage11.mtx", 39082);
-    cout << "cage11 end" << endl; 
     
     
 
