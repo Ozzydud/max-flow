@@ -24,7 +24,8 @@ def generate_weight():
     return round(random.uniform(0.1, 1.0), 8)  # You can adjust the range as needed
 
 # Add X random edges with weights
-while G.number_of_edges() < number_of_edges:
+max_possible_edges = (number_of_nodes * (number_of_nodes - 1)) // 2  # Maximum possible edges in an undirected graph
+while G.number_of_edges() < number_of_edges and G.number_of_edges() < max_possible_edges:
     # Select two random nodes
     u = random.randint(0, number_of_nodes - 1)
     v = random.randint(0, number_of_nodes - 1)
@@ -34,7 +35,7 @@ while G.number_of_edges() < number_of_edges:
         weight = generate_weight()
         G.add_edge(u, v, weight=weight)
 
-print("The graph has {} nodes and {} edges.".format(G.number_of_nodes(), G.number_of_edges()))
+print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
 
 # Define source and sink
 source = 0  # First node
@@ -45,23 +46,18 @@ def write_matrix(G, filename):
     with open(filename, 'w') as file:
         n = G.number_of_nodes()
         edges = G.number_of_edges()
-        file.write("%%MatrixMarket matrix coordinate real symmetric\n%\n{} {} {}\n".format(n, n, edges))
-
-        sorted_edges = sorted(G.edges(data=True), key=lambda x: x[1])
-
-        for u, v, data in sorted_edges:
-            file.write("{} {} {:.8f}\n".format(u+1, v+1, data['weight']))
-  # Adjust format here
-
+        file.write(f"%%MatrixMarket matrix coordinate real symmetric\n%\n{n} {n} {edges}\n")
+        
+        # Collect edges sorted by column index (v)
+        sorted_edges_by_col = sorted(G.edges(data=True), key=lambda x: (x[1], x[0]))
+        
+        # Write sorted edges to file
+        for u, v, data in sorted_edges_by_col:
+            file.write(f"{u+1} {v+1} {data['weight']:.8f}\n")  # Adjust format here
 
 # Check if there is a path from source to sink
 if nx.has_path(G, source, sink):
     print("There is a path from the source to the sink.")
-    #matrix = nx.to_scipy_sparse_array(G, nodelist=sorted(G.nodes()), weight='weight', dtype=float, format='csr')
-    # Save the matrix to a .mtx file
-    #mmwrite("output_graph.mtx", matrix)
     write_matrix(G, output_filename)
 else:
     print("No path from the source to the sink.")
-
-
