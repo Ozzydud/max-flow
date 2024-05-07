@@ -7,9 +7,6 @@
 #include <ctime> // For timing
 using namespace std;
 
-// Number of vertices in given graph 39082
-#define V 39082
-
 
 #define INF 1e9
 
@@ -22,7 +19,7 @@ double measureTime(clock_t start) {
 /* Returns true if there is a path from source 's' to sink
 't' in residual graph. Also fills parent[] to store the
 path */
-pair<bool, double> bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent)
+pair<bool, double> bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent, int V)
 {
     clock_t start = clock(); // Start timing
 
@@ -72,7 +69,7 @@ pair<bool, double> bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& p
     return make_pair(false, totalTime);
 }
 
-tuple<int, double, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int t)
+tuple<int, double, double, double> fordFulkerson(vector<vector<int>>& graph, int s, int t, int V)
 {
     double setupTime = 0;	
     clock_t start1 = clock();
@@ -101,7 +98,7 @@ tuple<int, double, double, double> fordFulkerson(vector<vector<int>>& graph, int
     // sink
     while (true)
     {
-        pair<bool, double> result = bfs(rGraph, s, t, parent);
+        pair<bool, double> result = bfs(rGraph, s, t, parent, V);
         bfsTime += result.second;
         if (!result.first)
             break;
@@ -135,7 +132,7 @@ tuple<int, double, double, double> fordFulkerson(vector<vector<int>>& graph, int
 }
 
 // Read input from .mtx file
-pair<vector<vector<int>>, double> readInput(const char *filename)
+pair<vector<vector<int>>, double> readInput(const char *filename, int V)
 {
     clock_t start = clock(); // Start timing
 
@@ -176,19 +173,18 @@ pair<vector<vector<int>>, double> readInput(const char *filename)
 }
 
 // Driver program to test above functions
-int main()
+int edmondskarp(const char *filename, int V)
 {
     clock_t start = clock();	
     // Read the graph from .mtx file
-    const char *filename = "data/cage11.mtx";
-    pair<vector<vector<int>>, double> readResult = readInput(filename);
+    pair<vector<vector<int>>, double> readResult = readInput(filename, V);
 
     // Convert graph to rGraph
     // Let us consider the source is 0 and sink is V-1
     int source = 0, sink = V - 1;
 
     // Timing the fordFulkerson method
-    tuple<int, double, double, double> fordFulkersonResult = fordFulkerson(readResult.first, source, sink);
+    tuple<int, double, double, double> fordFulkersonResult = fordFulkerson(readResult.first, source, sink, V);
     cout << "Init time: " << readResult.second + get<3>(fordFulkersonResult) << " seconds" << endl;
     cout << "Time taken by BFS: " << get<1>(fordFulkersonResult) << " seconds" << endl;
     cout << "Time taken by augmenting paths: " << get<2>(fordFulkersonResult) << " seconds" << endl;
@@ -196,4 +192,22 @@ int main()
     cout << "The maximum possible flow is " << get<0>(fordFulkersonResult) << endl;
 
     return 0;
+}
+
+int main(){
+    cout << "cage3" << endl; 
+    edmondskarp("cage3.mtx", 5);
+    cout << "cage3 end" << endl; 
+
+    cout << "cage9" << endl; 
+    edmondskarp("data/cage9.mtx", 3534);
+    cout << "cage9 end" << endl; 
+
+    cout << "cage10" << endl; 
+    edmondskarp("data/cage10.mtx", 11397);
+    cout << "cage10 end" << endl; 
+
+    cout << "cage11" << endl; 
+    edmondskarp("data/cage11.mtx", 39082);
+    cout << "cage11 end" << endl; 
 }

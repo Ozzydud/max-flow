@@ -1,17 +1,3 @@
-%%MatrixMarket matrix coordinate real general
-%-------------------------------------------------------------------------------
-% UF Sparse Matrix Collection, Tim Davis
-% http://www.cise.ufl.edu/research/sparse/matrices/HB/gre_1107
-% name: HB/gre_1107
-% [UNSYMMETRIC MATRIX FROM GRENOBLE,FRANCOIS CACHARD,MARCH 1981.]
-% id: 160
-% date: 1981
-% author: F. Cachard
-% ed: I. Duff, R. Grimes, J. Lewis
-% fields: title A name id date author ed kind
-% kind: directed weighted graph
-%-------------------------------------------------------------------------------
-
 1 1 .666666666666667
 2 1 .100036889486116
 3 1 .122185332736106
