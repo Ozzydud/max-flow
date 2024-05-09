@@ -128,6 +128,15 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 int main() {
     cudaError_t cudaStatus = cudaSetDevice(4);
+    cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
+    cudaEventCreate(&startEvent3);
+    cudaEventCreate(&stopEvent3);
+    cudaEventCreate(&startEvent3_1);
+    cudaEventCreate(&stopEvent3_1);
+    float partinitmili = 0.0f;
+    float initmili = 0.0f;
+    float totalInitTime = 0.0f;
+    cudaEventRecord(startEvent3);
     if (cudaStatus != cudaSuccess) {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
@@ -228,8 +237,12 @@ int main() {
     
     cout << "hi1" << endl;
     int counter = 0;
-
+    cudaEventRecord(stopEvent3);
+    cudaEventSynchronize(stopEvent3);
+    cudaEventElapsedTime(&initmili, startEvent3, stopEvent3);
+    totalInitTime += initmili;
     do{
+	cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
@@ -250,9 +263,13 @@ int main() {
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
 	    //cout << "hi2" << endl;
+	cudaEventRecord(stopEvent3_1);
+	cudaEventSynchronize(stopEvent3_1);
+	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
+	totalInitTime += partinitmili;
         while(!sink_reachable(frontier, total_nodes, sink)){
-        cudaEventRecord(startEvent, 0);
-
+	cudaEventRecord(startEvent, 0);
+	
         // Run BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
         bfsCounter++;
@@ -314,8 +331,9 @@ int main() {
     cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
     cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
     cout << "Total time BFS is: " << avgBFSTime << "ms\n";
-    cout << "Average AUG time is " << avgAUGTime << "ms\n";
-    cout << "Total AUG time is: " << avgAUGTime / augCounter << "ms\n";
+    cout << "Total AUG time is " << avgAUGTime << "ms\n";
+    cout << "Average AUG time is: " << avgAUGTime / augCounter << "ms\n";
+    cout << "Total init time is: " << totalInitTime << "ms\n";
 
     cout << "Maximum Flow: " << max_flow << endl;
     
@@ -343,6 +361,12 @@ int main() {
 
     cudaEventDestroy(stopEvent2);
     cudaEventDestroy(startEvent2);
+
+    cudaEventDestroy(stopEvent3);
+    cudaEventDestroy(startEvent3);
+
+    cudaEventDestroy(startEvent3_1);
+    cudaEventDestroy(stopEvent3_1);
 
     return 0;
 }
