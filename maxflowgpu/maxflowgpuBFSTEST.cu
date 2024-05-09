@@ -78,7 +78,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
         visited[Idx] = true;
 
         for (int i = vertices - 1; i >= 0; i--) { // Traverse downwards from source to sink
-            if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
+            if (!frontier[i] && !visited[i] && r_capacity[i * vertices + Idx] > 0) {
                 if (atomicCAS(locks + i, 0, 1) == 1 || frontier[i]) {
                     continue;
                 }
@@ -86,7 +86,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
                 locks[i] = 0;
 
                 parent[i] = Idx;
-                flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+                flow[i] = min(flow[Idx], r_capacity[i * vertices + Idx]);
             }
         }
     }
