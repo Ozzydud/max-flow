@@ -274,12 +274,13 @@ int edmondskarp(const char* filename, int total_nodes) {
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
-
+        cout << "jek1" << endl;
         found_augmenting_path = frontier[sink];
 
         if(!found_augmenting_path){
             break;
         }
+        cout << "jek2" << endl;
 
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
