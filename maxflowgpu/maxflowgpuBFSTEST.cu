@@ -282,7 +282,6 @@ int edmondskarp(const char* filename, int total_nodes) {
         
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
-        cout << "after" << frontier[0] << frontier[total_nodes-1] << endl;
         }
         found_augmenting_path = frontier[5];
 
