@@ -257,7 +257,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-    cout << frontier[0] << frontier[total_nodes-1] << endl;
+    cout << frontier[sink] << frontier[source] << endl;
         while(!sink_reachable(frontier, total_nodes, source)){
 	cudaEventRecord(startEvent, 0);
         
