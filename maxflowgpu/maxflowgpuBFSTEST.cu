@@ -103,10 +103,10 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 }
 
 
-bool sink_reachable(bool* frontier, int total_nodes, int sink){
+bool sink_reachable(bool* frontier, int total_nodes, int source){
     for (int i = total_nodes-1; i > -1; --i) {
                 if(frontier[i]){
-                        return i == sink;
+                        return i == source;
                 }
         }
         return true;
@@ -257,7 +257,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!sink_reachable(frontier, total_nodes, sink)){
+        while(!sink_reachable(frontier, total_nodes, source)){
 	cudaEventRecord(startEvent, 0);
         cout << frontier[0] << frontier[total_nodes-1] << endl;
         // Run BFS kernel
