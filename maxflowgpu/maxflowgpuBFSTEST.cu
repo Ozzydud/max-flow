@@ -109,7 +109,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int source){
                         return i == source;
                 }
         }
-        return true;
+        return false;
 }
 
 
