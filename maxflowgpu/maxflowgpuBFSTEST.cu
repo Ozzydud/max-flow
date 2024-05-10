@@ -236,7 +236,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == sink){
+        if(i == source){
             frontier[i] = true;
         }else{
             frontier[i] = false;
@@ -261,7 +261,6 @@ int edmondskarp(const char* filename, int total_nodes) {
         // Run BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
         bfsCounter++;
-        cout << "testing 4" << endl;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
         cudaEventSynchronize(stopEvent);
