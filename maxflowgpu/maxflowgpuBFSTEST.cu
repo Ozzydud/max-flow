@@ -272,7 +272,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventRecord(startEvent, 0);
         
         // Run BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
 
         
         bfsCounter++;
