@@ -295,9 +295,10 @@ int edmondskarp(const char* filename, int total_nodes) {
         cout << path_flow << endl;
         max_flow += path_flow;
 
-        for(int i = source; i != sink; i = parent[i]){
-                        do_change_capacity[i] = true;
-                }
+        for(int i = source; i != -1; i = parent[i]){
+            do_change_capacity[i] = true;
+    }
+
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
