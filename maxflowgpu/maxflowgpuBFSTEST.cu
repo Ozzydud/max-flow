@@ -77,7 +77,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
         frontier[Idx] = false;
         visited[Idx] = true;
 
-        for (int i = vertices - 1; i >= 0; i--) { // Traverse downwards from source to sink
+        for (int i = vertices - 1; i >= 0; i--) { 
             if (!frontier[i] && !visited[i] && r_capacity[i * vertices + Idx] > 0) {
                 if (atomicCAS(locks + i, 0, 1) == 1 || frontier[i]) {
                     continue;
@@ -103,10 +103,10 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 }
 
 
-bool sink_reachable(bool* frontier, int total_nodes, int sink){
+bool sink_reachable(bool* frontier, int total_nodes, int source){
     for (int i = total_nodes-1; i > -1; --i) {
                 if(frontier[i]){
-                        return i == sink;
+                        return i == source;
                 }
         }
         return true;
@@ -236,7 +236,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == source){
+        if(i == sink){
             frontier[i] = true;
         }else{
             frontier[i] = false;
@@ -256,7 +256,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!sink_reachable(frontier, total_nodes, sink)){
+        while(!sink_reachable(frontier, total_nodes, source)){
 	cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
