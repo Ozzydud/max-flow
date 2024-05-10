@@ -262,7 +262,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         // Run BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
 
-        cout << "after" << frontier[0] << frontier[total_nodes-1] << endl;
+        
         bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
@@ -275,6 +275,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        cout << "after" << frontier[0] << frontier[total_nodes-1] << endl;
         }
         found_augmenting_path = frontier[5];
 
