@@ -88,6 +88,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
                 parent[i] = Idx;
                 flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
                 printf("Updated frontier[%d]: %d\n", i, frontier[i]);
+                printf("Updated frontier[%d]: %d\n", i, frontier[source]);
             }
         }
     }
