@@ -236,7 +236,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == source){
+        if(i == sink){
             frontier[i] = true;
         }else{
             frontier[i] = false;
@@ -273,13 +273,11 @@ int edmondskarp(const char* filename, int total_nodes) {
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
-        cout << "jek1" << endl;
-        found_augmenting_path = frontier[source];
+        found_augmenting_path = frontier[5];
 
         if(!found_augmenting_path){
             break;
         }
-        cout << "jek2" << endl;
 
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
