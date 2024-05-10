@@ -73,12 +73,12 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int source, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (Idx < vertices && frontier[Idx]) {
+    if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
 
         for (int i = vertices - 1; i >= 0; i--) { 
-            if (!frontier[i] && !visited[i] && r_capacity[i * vertices + Idx] > 0) {
+            if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
                 if (atomicCAS(locks + i, 0, 1) == 1 || frontier[i]) {
                     continue;
                 }
@@ -86,7 +86,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
                 locks[i] = 0;
 
                 parent[i] = Idx;
-                flow[i] = min(flow[Idx], r_capacity[i * vertices + Idx]);
+                flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
             }
         }
     }
