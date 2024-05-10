@@ -107,7 +107,7 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 
 bool sink_reachable(bool* frontier, int total_nodes, int source){
     if(frontier[0]){
-        return frontier[source]
+        return frontier[source];
     }
         return true;
 }
