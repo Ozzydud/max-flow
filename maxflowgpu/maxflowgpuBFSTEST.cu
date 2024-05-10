@@ -84,7 +84,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
                 frontier[i] = true;
                 locks[i] = 0;
 
-                parent[i] = Idx;
+                parent[Idx] = i;
                 flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
             }
         }
