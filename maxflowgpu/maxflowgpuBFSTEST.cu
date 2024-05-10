@@ -75,7 +75,6 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
     if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
-        printf("Idx: %d, Initial frontier[Idx]: %d\n", Idx, frontier[Idx]);
         
         for (int i = 0; i < vertices; i++) { 
             if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
@@ -87,8 +86,6 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
 
                 parent[i] = Idx;
                 flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
-                printf("Updated frontier[%d]: %d\n", i, frontier[i]);
-                printf("Updated frontier[%d]: %d\n", i, frontier[source]);
             }
         }
     }
