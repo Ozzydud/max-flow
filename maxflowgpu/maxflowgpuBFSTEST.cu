@@ -72,7 +72,6 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
 __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier, bool* visited, int vertices, int source, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    printf("Idx: %d, Initial frontier[Idx]: %d\n", Idx, frontier[Idx]);
     if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
