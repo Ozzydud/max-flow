@@ -108,7 +108,15 @@ bool sink_reachable(bool* frontier, int total_nodes, int source){
 }
 
 
-
+void printResidual(int* residual, int total_nodes) {
+    cout << "Residual Matrix:" << endl;
+    for (int i = 0; i < total_nodes; ++i) {
+        for (int j = 0; j < total_nodes; ++j) {
+            cout << residual[i * total_nodes + j] << " ";
+        }
+        cout << endl;
+    }
+}
 
 
 int edmondskarp(const char* filename, int total_nodes) {
@@ -173,6 +181,8 @@ int edmondskarp(const char* filename, int total_nodes) {
 
     readInput(filename, total_nodes, residual);
     cout << "data read" << endl;
+
+    printResidual(residual, total_nodes);
 
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
@@ -360,6 +370,8 @@ int edmondskarp(const char* filename, int total_nodes) {
 }
 
 int main(){
+
+    
     cout << "1000x400500" << endl; 
     edmondskarp("cage3.mtx", 5);
     cout << "1000x400500 end" << endl; 
