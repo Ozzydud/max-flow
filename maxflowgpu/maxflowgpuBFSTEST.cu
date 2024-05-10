@@ -77,7 +77,7 @@ __global__ void cudaBFS(int* r_capacity, int* parent, int* flow, bool* frontier,
         visited[Idx] = true;
         printf("Idx: %d, Initial frontier[Idx]: %d\n", Idx, frontier[Idx]);
         
-        for (int i = vertices-1; i >= 0; i--) { 
+        for (int i = 0; i < vertices; i++) { 
             if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
                 if (atomicCAS(locks + i, 0, 1) == 1 || frontier[i]) {
                     continue;
