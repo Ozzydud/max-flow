@@ -300,6 +300,8 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaEventRecord(startEvent2, 0);
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
 
+        cout << "test" << endl;
+
              augCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent2, 0);
