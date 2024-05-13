@@ -112,9 +112,6 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
         return false;
 }
 
-bool source_reachable2(bool* visited, int source) {
-    return visited[source];
-}
 
 
 
@@ -262,7 +259,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!source_reachable2(visited, source) && !source_reachable(frontier, total_nodes, source)){
+        while(!source_reachable(frontier, total_nodes, source)){
 	cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
@@ -276,10 +273,9 @@ int edmondskarp(const char* filename, int total_nodes) {
         float bfsmili = 0.0f;
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
-        
+        cout << "hehe" << endl;
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
-        cudaMemcpy(visited, d_visited, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
 
         found_augmenting_path = frontier[source];
