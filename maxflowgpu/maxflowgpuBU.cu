@@ -291,6 +291,8 @@ int edmondskarp(const char* filename, int total_nodes) {
                         do_change_capacity[i] = true;
                 }
 
+        cout << "test" << endl;
+
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
 	//cout << "hi4" << endl;
