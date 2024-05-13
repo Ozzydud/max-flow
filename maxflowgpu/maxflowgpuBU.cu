@@ -287,11 +287,10 @@ int edmondskarp(const char* filename, int total_nodes) {
         max_flow += path_flow;
 
         cout << max_flow << endl;
-        for(int i = sink; i != source; i = parent[i]){
-                        do_change_capacity[i] = true;
-                }
+        for (int i = source; i != sink; i = parent[i]) {
+            do_change_capacity[i] = true;
+        }
 
-        cout << "test" << endl;
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
@@ -299,8 +298,6 @@ int edmondskarp(const char* filename, int total_nodes) {
         // Launch BFS kernel
         cudaEventRecord(startEvent2, 0);
         cudaAugment_path<<< grid_size, block_size >>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
-
-        cout << "test" << endl;
 
              augCounter++;
         // Stop recording the event
