@@ -85,7 +85,8 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
         frontier[i] = true;
         locks[i] = 0;
         parent[i] = Idx;
-        flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+        flow[i] = min(flow[Idx], r_capacity[i * vertices + Idx]);
+
     }
 }
 
@@ -107,18 +108,6 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
     return frontier[source];
 }
 
-
-void resetArrays(bool* frontier, bool* visited, int* parent, int* flow, int* locks, bool* do_change_capacity, int total_nodes, int source) {
-    // Reset frontier
-    memset(frontier, 0, total_nodes * sizeof(bool));
-    frontier[source] = true; // Set source as reachable
-    // Reset visited, parent, flow, locks, and do_change_capacity arrays
-    memset(visited, 0, total_nodes * sizeof(bool));
-    fill(parent, parent + total_nodes, -1);
-    fill(flow, flow + total_nodes, INF);
-    memset(locks, 0, total_nodes * sizeof(int));
-    memset(do_change_capacity, 0, total_nodes * sizeof(bool));
-}
 
 
 
@@ -239,8 +228,20 @@ int edmondskarp(const char* filename, int total_nodes) {
     totalInitTime += initmili;
     do{
 	cudaEventRecord(startEvent3_1);
-        resetArrays(frontier, visited, parent, flow, locks, do_change_capacity, total_nodes, source);
-        
+        for (int i = 0; i < total_nodes; ++i) {
+        parent[i] = -1; // Initialize parent array
+        flow[i] = INF;  // Initialize flow array with INF
+        locks[i] = 0;
+        if(i == sink){
+            frontier[i] = true;
+        }else{
+            frontier[i] = false;
+        }
+
+        visited[i] = false;
+        do_change_capacity[i] = false;
+        }
+   
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
