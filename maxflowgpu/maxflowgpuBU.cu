@@ -104,15 +104,8 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 
 
 bool source_reachable(bool* frontier, int total_nodes, int source) {
-    for (int i = total_nodes-1; i > -1; --i) {
-                if(frontier[i]){
-                        return i == source;
-                }
-        }
-        return false;
+    return frontier[source];
 }
-
-
 
 
 
@@ -273,6 +266,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         float bfsmili = 0.0f;
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
+        cout << "hehe" << endl;
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
