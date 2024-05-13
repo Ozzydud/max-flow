@@ -129,7 +129,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
         return 1;
     }
-    int total_nodes = total_nodes; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
 
 
