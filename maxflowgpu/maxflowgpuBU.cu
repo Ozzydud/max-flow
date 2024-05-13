@@ -275,7 +275,9 @@ int edmondskarp(const char* filename, int total_nodes) {
         if(!found_augmenting_path){
             break;
         }
-
+        for(int i = 0; i<5; i++){
+            cout << frontier[i] << endl;
+        }
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
 
@@ -308,7 +310,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	counter++;
 	//cout << "Counter is: " << counter << endl;
 
-    } while(found_augmenting_path); //found_augmenting_path);
+    } while(counter != 3); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
