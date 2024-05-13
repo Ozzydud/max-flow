@@ -184,8 +184,8 @@ int edmondskarp(const char* filename, int total_nodes) {
     bool* do_change_capacity = new bool[total_nodes];
     
 
-    // Set initial flow from source to 0
-    flow[source] = 0;
+    // Set initial flow from sink to 0
+    flow[sink] = 0;
     int* locks = new int[total_nodes];
     int* d_r_capacity, * d_parent, * d_flow, *d_locks;;
     bool* d_frontier, * d_visited, *d_do_change_capacity;
