@@ -73,6 +73,18 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int source, int* locks){
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
+            printf("Frontier array:\n");
+        for (int i = 0; i < vertices; ++i) {
+            printf("%d ", frontier[i] ? 1 : 0);
+        }
+        printf("\n");
+
+        printf("Visited array:\n");
+        for (int i = 0; i < vertices; ++i) {
+            printf("%d ", visited[i] ? 1 : 0);
+        }
+        printf("\n");
+
     if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
@@ -310,7 +322,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	counter++;
 	//cout << "Counter is: " << counter << endl;
 
-    } while(counter != 3); //found_augmenting_path);
+    } while(found_augmenting_path); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
