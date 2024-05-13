@@ -106,8 +106,8 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 bool source_reachable(bool* frontier, int total_nodes, int source) {
     
     for (int i = 0; i < total_nodes; ++i) {
-        if (frontier[i] && i == source) {
-            return true;  // Source node is reachable from at least one node in the frontier
+        if (frontier[i]) {
+            return i == source;  // Source node is reachable from at least one node in the frontier
         }   
     }
     return true;  // Source node is not reachable from any node in the frontier
