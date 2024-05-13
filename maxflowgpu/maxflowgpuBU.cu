@@ -310,7 +310,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	counter++;
 	//cout << "Counter is: " << counter << endl;
 
-    } while(counter != 3); //found_augmenting_path);
+    } while(counter != 4); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
