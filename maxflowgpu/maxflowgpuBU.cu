@@ -185,6 +185,7 @@ int edmondskarp(const char* filename, int total_nodes) {
     
 
     // Set initial flow from sink to 0
+    flow[source] = 0;
     flow[sink] = 0;
     int* locks = new int[total_nodes];
     int* d_r_capacity, * d_parent, * d_flow, *d_locks;;
