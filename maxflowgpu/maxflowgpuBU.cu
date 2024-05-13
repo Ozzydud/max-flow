@@ -110,7 +110,7 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
             return true;  // Source node is reachable from at least one node in the frontier
         }   
     }
-    return false;  // Source node is not reachable from any node in the frontier
+    return true;  // Source node is not reachable from any node in the frontier
 }
 
 
