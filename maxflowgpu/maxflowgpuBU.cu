@@ -267,6 +267,9 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
 
+        if (frontier[source]){
+            break;
+        }
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
 
