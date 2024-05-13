@@ -75,13 +75,13 @@ __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier,
 
             printf("Frontier array:\n");
         for (int i = 0; i < vertices; ++i) {
-            printf("%d ", frontier[i] ? 1 : 0);
+            printf("%d ", frontier[i]);
         }
         printf("\n");
 
         printf("Visited array:\n");
         for (int i = 0; i < vertices; ++i) {
-            printf("%d ", visited[i] ? 1 : 0);
+            printf("%d ", visited[i]);
         }
         printf("\n");
 
