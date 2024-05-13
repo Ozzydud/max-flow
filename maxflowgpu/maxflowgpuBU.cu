@@ -274,6 +274,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         }
 
         found_augmenting_path = frontier[source];
+        cout << frontier[source] << endl;
 
         if(!found_augmenting_path){
             break;
