@@ -72,12 +72,11 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
 __global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int sink, int* locks){
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
+    if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
-
-        for (int i = vertices; i > 0; i--) {
+        
+        for (int i = 0; i < vertices; i++) { 
             if (!frontier[i] && !visited[i] && r_capacity[Idx * vertices + i] > 0) {
                 if(atomicCAS(locks+i, 0 , 1) == 1 || frontier[i]){
                                 continue;
@@ -99,19 +98,27 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
     if(Idx < total_nodes && do_change_capacity[Idx]){
         r_capacity[parent[Idx] * total_nodes + Idx] -= path_flow;
         r_capacity[Idx * total_nodes + parent[Idx]] += path_flow; 
-    }    
+    }  
 }
 
 
-bool sink_reachable(bool* frontier, int total_nodes, int sink){
-    for (int i = total_nodes-1; i > -1; --i) {
-                if(frontier[i]){
-                        return i == sink;
-                }
+bool sink_reachable(bool* frontier, int total_nodes, int source){
+    if(frontier[0]){
+        return frontier[source];
+    }
+        return false;
+}
+
+
+void printResidual(int* residual, int total_nodes) {
+    cout << "Residual Matrix:" << endl;
+    for (int i = 0; i < total_nodes; ++i) {
+        for (int j = 0; j < total_nodes; ++j) {
+            cout << residual[i * total_nodes + j] << " ";
         }
-        return true;
+        cout << endl;
+    }
 }
-
 
 
 int edmondskarp(const char* filename, int total_nodes) {
@@ -177,6 +184,8 @@ int edmondskarp(const char* filename, int total_nodes) {
     readInput(filename, total_nodes, residual);
     cout << "data read" << endl;
 
+    printResidual(residual, total_nodes);
+
     int source = 0;
     int sink = total_nodes - 1; // Assuming sink is the last node
     int path_flow;
@@ -235,7 +244,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == source){
+        if(i == sink){
             frontier[i] = true;
         }else{
             frontier[i] = false;
@@ -255,11 +264,15 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!sink_reachable(frontier, total_nodes, sink)){
+    cout << frontier[sink] << frontier[source] << endl;
+        while(!sink_reachable(frontier, total_nodes, source)){
+            cout << "hehe" << frontier[source] << endl;
 	cudaEventRecord(startEvent, 0);
-	
+        
         // Run BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
+
+        
         bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
@@ -270,12 +283,13 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
         
-
+        if (bfsCounter > 3){
+            break;
+        }
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
-
-        found_augmenting_path = frontier[sink];
-
+        found_augmenting_path = frontier[source];
+        cout << "hgehehehe" << endl;
         if(!found_augmenting_path){
             break;
         }
@@ -283,12 +297,14 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
 
-        path_flow = flow[sink];
+        path_flow = flow[source];
+        cout << path_flow << endl;
         max_flow += path_flow;
 
-        for(int i = sink; i != source; i = parent[i]){
-                        do_change_capacity[i] = true;
-                }
+        for(int i = source; i != -1; i = parent[i]){
+            do_change_capacity[i] = true;
+    }
+
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
@@ -310,7 +326,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	counter++;
 	//cout << "Counter is: " << counter << endl;
 
-    } while(found_augmenting_path); //found_augmenting_path);
+    } while(counter != 3); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
@@ -360,9 +376,12 @@ int edmondskarp(const char* filename, int total_nodes) {
 }
 
 int main(){
+
+    
     cout << "1000x400500" << endl; 
-    edmondskarp("data/1000x400500.mtx", 1000);
+    edmondskarp("cage3.mtx", 5);
     cout << "1000x400500 end" << endl; 
+    /*
 
     cout << "5000x1250000" << endl; 
     edmondskarp("data/5000x1250000.mtx", 5000);
@@ -371,12 +390,11 @@ int main(){
     cout << "10000x2500000" << endl; 
     edmondskarp("data/10000x2500000.mtx", 10000);
     cout << "10000x2500000 end" << endl; 
-
+*/
     
     
 
     // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
 
 }
-
 
