@@ -274,12 +274,14 @@ int edmondskarp(const char* filename, int total_nodes) {
         avgBFSTime += bfsmili;
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        if(!found_augmenting_path){
+            break;
+        }
         }
 
         found_augmenting_path = source_reachable(frontier, total_nodes, source);
-        cout << found_augmenting_path << endl;
 
-        if(found_augmenting_path){
+        if(!found_augmenting_path){
             break;
         }
 
