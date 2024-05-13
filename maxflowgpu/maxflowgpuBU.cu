@@ -266,7 +266,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         float bfsmili = 0.0f;
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
-        
+        cout << "hehe" << endl;
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
@@ -276,9 +276,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         if(!found_augmenting_path){
             break;
         }
-        for(int i = 0; i<5; i++){
-            cout << frontier[i] << endl;
-        }
+
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
 
