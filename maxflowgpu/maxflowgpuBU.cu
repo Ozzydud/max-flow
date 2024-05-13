@@ -106,11 +106,11 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 bool source_reachable(bool* frontier, int total_nodes, int source) {
     
     for (int i = 0; i < total_nodes; ++i) {
-        if (frontier[i]) {
-            return i == source;  // Source node is reachable from at least one node in the frontier
+        if (frontier[i] && i == source) {
+            return true;  // Source node is reachable from at least one node in the frontier
         }   
     }
-    return true;  // Source node is not reachable from any node in the frontier
+    return false;  // Source node is not reachable from any node in the frontier
 }
 
 
@@ -314,7 +314,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	counter++;
 	//cout << "Counter is: " << counter << endl;
 
-    } while(counter != 30); //found_augmenting_path);
+    } while(counter != 300); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
