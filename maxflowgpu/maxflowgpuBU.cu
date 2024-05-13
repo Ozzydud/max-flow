@@ -252,7 +252,8 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!source_reachable(frontier, total_nodes, source)){
+    found_augmenting_path = frontier[source];
+        while(!found_augmenting_path){
 	cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
