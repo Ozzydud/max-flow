@@ -283,8 +283,8 @@ int main() {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-    cout << !sink_reachable(TDfrontier, total_nodes, sink) << !source_reachable(BUfrontier, total_nodes, source) << !isEqual(TDfrontier, BUfrontier, total_nodes) << endl;
-        while(!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source) || !isEqual(TDfrontier, BUfrontier, total_nodes)){
+    cout << !sink_reachable(TDfrontier, total_nodes, sink) << !source_reachable(BUfrontier, total_nodes, source) << isEqual(TDfrontier, BUfrontier, total_nodes) << endl;
+        while(!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source) || isEqual(TDfrontier, BUfrontier, total_nodes)){
 	    cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
