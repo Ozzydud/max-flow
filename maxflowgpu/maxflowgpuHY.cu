@@ -268,13 +268,14 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        frontier[i] = false;
+        frontier_1[i] = false;
+        frontier_2[i] = false;
 
         visited[i] = false;
         do_change_capacity[i] = false;
         }
-        frontier_1[sink] = true
-        frontier_2[source] = true
+        frontier_1[sink] = true;
+        frontier_2[source] = true;
    
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
@@ -287,6 +288,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
+    bool met_in_middle = false;
         while(!met_in_middle){
 	cudaEventRecord(startEvent, 0);
 
@@ -307,7 +309,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaMemcpy(frontier_1, d_frontier_1, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost); 
         met_in_middle = true;
         for (int i = 0; i < total_nodes; ++i) {
-            if (frontier_sink_to_source[i] != frontier_source_to_sink[i]) {
+            if (frontier_1[i] != frontier_2[i]) {
                 met_in_middle = false;
                 break;
         }
@@ -315,7 +317,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         
         }
 
-        found_augmenting_path = frontier[sink] && frontier[source];
+        found_augmenting_path = frontier_1[source] && frontier_2[sink];
 
         if(!found_augmenting_path){
             break;
@@ -382,13 +384,15 @@ int edmondskarp(const char* filename, int total_nodes) {
     delete[] parent;
     delete[] flow;
     delete[] locks;
-    delete[] frontier;
+    delete[] frontier_1;
+    delete[] frontier_2
     delete[] visited;
     delete[] do_change_capacity;
     cudaFree(d_r_capacity);
     cudaFree(d_parent);
     cudaFree(d_flow);
-    cudaFree(d_frontier);
+    cudaFree(d_frontier_1);
+    cudaFree(d_frontier_2);
     cudaFree(d_visited);
     cudaFree(d_locks);
     cudaFree(d_do_change_capacity);
