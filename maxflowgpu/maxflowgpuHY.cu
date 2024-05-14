@@ -306,7 +306,7 @@ int main() {
 
         }
 
-        found_augmenting_path = (TDfrontier[sink] && BUfrontier[source] && isEqual(TDfrontier, BUfrontier, total_nodes));
+        found_augmenting_path = (TDfrontier[sink] && BUfrontier[source] && !isEqual(TDfrontier, BUfrontier, total_nodes));
 
 
         if(!found_augmenting_path){
