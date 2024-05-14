@@ -285,7 +285,7 @@ int main() {
 	totalInitTime += partinitmili;
     int c = 0;
         while(!sink_reachable(TDfrontier, total_nodes, sink) && !source_reachable(BUfrontier, total_nodes, source) && isEqual(TDfrontier, BUfrontier, total_nodes)){
-            c++
+            c++;
 	    cudaEventRecord(startEvent, 0);
         // Run BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_TDfrontier, d_visited, total_nodes, sink, d_locks);
