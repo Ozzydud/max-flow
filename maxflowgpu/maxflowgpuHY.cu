@@ -385,7 +385,7 @@ int edmondskarp(const char* filename, int total_nodes) {
     delete[] flow;
     delete[] locks;
     delete[] frontier_1;
-    delete[] frontier_2
+    delete[] frontier_2;
     delete[] visited;
     delete[] do_change_capacity;
     cudaFree(d_r_capacity);
