@@ -300,14 +300,12 @@ int main() {
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
         
-        cout << TDfrontier[sink] << BUfrontier[sink] << endl;
         cudaMemcpy(TDfrontier, d_TDfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
 
         }
-
-        found_augmenting_path = (TDfrontier[sink] && BUfrontier[source] && !isEqual(TDfrontier, BUfrontier, total_nodes));
-
+        cout << TDfrontier[sink] << BUfrontier[source] << isEqual(TDfrontier, BUfrontier, total_nodes) << endl;
+        found_augmenting_path = (TDfrontier[sink] || BUfrontier[source] || isEqual(TDfrontier, BUfrontier, total_nodes));
 
         if(!found_augmenting_path){
             break;
