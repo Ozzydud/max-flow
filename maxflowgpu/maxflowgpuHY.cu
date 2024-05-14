@@ -283,9 +283,10 @@ int main() {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
+    int c = 0;
         while(!sink_reachable(TDfrontier, total_nodes, sink) && !source_reachable(BUfrontier, total_nodes, source) && isEqual(TDfrontier, BUfrontier, total_nodes)){
+            c++
 	    cudaEventRecord(startEvent, 0);
-	
         // Run BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_TDfrontier, d_visited, total_nodes, sink, d_locks);
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_BUfrontier, d_visited, total_nodes, sink, d_locks);
@@ -302,6 +303,9 @@ int main() {
         cout << TDfrontier[sink] << BUfrontier[sink] << endl;
         cudaMemcpy(TDfrontier, d_TDfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        if (c != 4){
+            return 0;
+        }
 
         }
 
