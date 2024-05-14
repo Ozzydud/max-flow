@@ -127,7 +127,6 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 int main() {
-    cudaError_t cudaStatus = cudaSetDevice(4);
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
@@ -137,11 +136,7 @@ int main() {
     float initmili = 0.0f;
     float totalInitTime = 0.0f;
     cudaEventRecord(startEvent3);
-    if (cudaStatus != cudaSuccess) {
-        std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
-        return 1;
-    }
-    int total_nodes = 39082; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 10000; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
 
 
@@ -186,7 +181,7 @@ int main() {
 
 
 
-    readInput("data/cage11.mtx", total_nodes, residual);
+    readInput("data/10000x2500000.mtx", total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;

@@ -128,7 +128,6 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
 
 
 int edmondskarp(const char* filename, int total_nodes) {
-    cudaError_t cudaStatus = cudaSetDevice(4);
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
@@ -138,10 +137,6 @@ int edmondskarp(const char* filename, int total_nodes) {
     float initmili = 0.0f;
     float totalInitTime = 0.0f;
     cudaEventRecord(startEvent3);
-    if (cudaStatus != cudaSuccess) {
-        std::cerr << "cudaSetDevice failed! Do you have a CUDA-capable GPU installed?";
-        return 1;
-    }
     // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
 
