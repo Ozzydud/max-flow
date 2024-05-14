@@ -330,7 +330,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         path_flow = flow[source];
         max_flow += path_flow;
 
-        if (frontier[sink]) {
+        if (frontier_2[sink]) {
     // Construct augmenting path from sink to source (top-down)
     for (int i = sink; i != source; i = parent[i]) {
         do_change_capacity[i] = true;
