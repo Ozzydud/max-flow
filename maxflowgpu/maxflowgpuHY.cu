@@ -265,7 +265,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == sink){
+        if(i == sink || i == source){
             frontier[i] = true;
         }else{
             frontier[i] = false;
