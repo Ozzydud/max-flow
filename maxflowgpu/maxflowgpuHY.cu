@@ -265,7 +265,7 @@ int main() {
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
         BUfrontier[i] = false;
-        TDfrontier[i] = false
+        TDfrontier[i] = false;
         visited[i] = false;
         do_change_capacity[i] = false;
         }
@@ -283,7 +283,7 @@ int main() {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source || isEven(TDfrontier, BUfrontier, total_nodes))){
+        while(!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source || isEqual(TDfrontier, BUfrontier, total_nodes))){
 	    cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
@@ -304,7 +304,7 @@ int main() {
         cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
 
-        found_augmenting_path = (frontier[sink] || frontier[source] || isEven(TDfrontier, BUfrontier, total_nodes));
+        found_augmenting_path = (TDfrontier[sink] || BUfrontier[source] || isEqual(TDfrontier, BUfrontier, total_nodes));
 
         if(!found_augmenting_path){
             break;
@@ -402,13 +402,15 @@ if (source_reachable_from_sink && sink_reachable_from_source) {
     delete[] parent;
     delete[] flow;
     delete[] locks;
-    delete[] frontier;
+    delete[] TDfrontier;
+    delete[] BUfrontier;
     delete[] visited;
     delete[] do_change_capacity;
     cudaFree(d_r_capacity);
     cudaFree(d_parent);
     cudaFree(d_flow);
-    cudaFree(d_frontier);
+    cudaFree(d_TDfrontier);
+    cudaFree(d_BUfrontier);
     cudaFree(d_visited);
     cudaFree(d_locks);
     cudaFree(d_do_change_capacity);
