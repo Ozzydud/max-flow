@@ -384,7 +384,7 @@ if (source_reachable_from_sink && sink_reachable_from_source) {
 	counter++;
 	//cout << "Counter is: " << counter << endl;
 
-    } while(found_augmenting_path); //found_augmenting_path);
+    } while(counter != 3); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
