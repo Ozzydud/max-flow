@@ -303,6 +303,10 @@ int main() {
         cout << TDfrontier[sink] << BUfrontier[sink] << endl;
         cudaMemcpy(TDfrontier, d_TDfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+
+        if(!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source) || isEqual(TDfrontier, BUfrontier, total_nodes)){
+            break;
+        }
         }
 
         found_augmenting_path = (TDfrontier[sink] || BUfrontier[source] || isEqual(TDfrontier, BUfrontier, total_nodes));
