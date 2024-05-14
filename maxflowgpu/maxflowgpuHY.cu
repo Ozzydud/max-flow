@@ -288,7 +288,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         while(!source_reachable && !sink_reachable){
 	cudaEventRecord(startEvent, 0);
 
-        found_augmenting_path = frontier[sink];
+        found_augmenting_path = frontier[sink] && frontier[source];
 
         if(!found_augmenting_path){
             break;
