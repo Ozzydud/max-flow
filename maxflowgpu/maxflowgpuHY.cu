@@ -156,7 +156,7 @@ int main() {
     float initmili = 0.0f;
     float totalInitTime = 0.0f;
     cudaEventRecord(startEvent3);
-    int total_nodes = 10000; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    int total_nodes = 5; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
 
 
@@ -201,7 +201,7 @@ int main() {
 
 
 
-    readInput("data/10000x2500000.mtx", total_nodes, residual);
+    readInput("cage3.mtx", total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
