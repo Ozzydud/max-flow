@@ -258,6 +258,7 @@ int main() {
     cudaEventSynchronize(stopEvent3);
     cudaEventElapsedTime(&initmili, startEvent3, stopEvent3);
     totalInitTime += initmili;
+    int c = 0;
     do{
 	cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
@@ -283,7 +284,7 @@ int main() {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-    int c = 0;
+    
         while(!sink_reachable(TDfrontier, total_nodes, sink) && !source_reachable(BUfrontier, total_nodes, source) && isEqual(TDfrontier, BUfrontier, total_nodes)){
             c++;
 	    cudaEventRecord(startEvent, 0);
