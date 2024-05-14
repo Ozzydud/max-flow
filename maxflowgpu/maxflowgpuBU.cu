@@ -272,9 +272,10 @@ int edmondskarp(const char* filename, int total_nodes) {
         float bfsmili = 0.0f;
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
-        cout << frontier[source] << endl;
+        
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        cout << frontier[source] << endl;
         }
 
         found_augmenting_path = source_reachable(frontier, total_nodes, source);
