@@ -70,7 +70,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
     file.close();
 }
 
-__global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int source, int* locks){
+__global__ void cudaBFS(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int source, int sink, int* locks){
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
@@ -282,7 +282,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, sink, d_locks);
         bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
