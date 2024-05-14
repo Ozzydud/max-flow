@@ -303,7 +303,7 @@ int main() {
         cout << TDfrontier[sink] << BUfrontier[sink] << endl;
         cudaMemcpy(TDfrontier, d_TDfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
-        if (c != 4){
+        if (c == 10){
             return 0;
         }
 
