@@ -305,7 +305,7 @@ int main() {
 
         }
         cout << TDfrontier[sink] << BUfrontier[source] << isEqual(TDfrontier, BUfrontier, total_nodes) << endl;
-        found_augmenting_path = (TDfrontier[sink] || BUfrontier[source] || isEqual(TDfrontier, BUfrontier, total_nodes));
+        found_augmenting_path = (!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source) || isEqual(TDfrontier, BUfrontier, total_nodes));
 
         if(!found_augmenting_path){
             break;
