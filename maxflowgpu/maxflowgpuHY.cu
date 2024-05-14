@@ -287,6 +287,12 @@ int edmondskarp(const char* filename, int total_nodes) {
 	totalInitTime += partinitmili;
         while(!source_reachable && !sink_reachable){
 	cudaEventRecord(startEvent, 0);
+
+        found_augmenting_path = frontier[sink];
+
+        if(!found_augmenting_path){
+            break;
+        }
 	
         // Run BFS kernel
         cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, sink, d_locks);
