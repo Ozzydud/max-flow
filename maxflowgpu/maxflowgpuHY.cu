@@ -315,6 +315,7 @@ int main() {
 
         path_flow = flow[sink];
         max_flow += path_flow;
+        cout << max_flow << endl;
 
         // Check if source is reachable from sink and vice versa
 // Check if source is reachable from sink and vice versa
