@@ -123,13 +123,21 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 
 
 bool source_reachable(bool* frontier, int total_nodes, int source) {
-    
     for (int i = 0; i < total_nodes; ++i) {
         if (frontier[i]) {
             return i == source;  // Source node is reachable from at least one node in the frontier
         }   
     }
     return true;  // Source node is not reachable from any node in the frontier
+}
+
+bool sink_reachable(bool* frontier, int total_nodes, int sink) {
+    for (int i = 0; i < total_nodes; ++i) {
+        if (frontier[i]) {
+            return i == sink;  // Sink node is reachable from at least one node in the frontier
+        }   
+    }
+    return true;  // Sink node is not reachable from any node in the frontier
 }
 
 
@@ -239,7 +247,7 @@ int edmondskarp(const char* filename, int total_nodes) {
     cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
 
 
-    bool found_augmenting_path = true;
+    bool found_augmenting_path;
     int max_flow = 0;
     int block_size = 1024;
     int grid_size = ceil(total_nodes * 1.0 / block_size); //(total_nodes + block_size - 1) / block_size;
@@ -277,8 +285,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(found_augmenting_path){
-        found_augmenting_path = false;
+        while(!source_reachable && !sink_reachable){
 	cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
@@ -293,8 +300,7 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
 
-        cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
-        found_augmenting_path = frontier[sink];       
+        cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost); 
         }
 
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
