@@ -212,7 +212,8 @@ int edmondskarp(const char* filename, int total_nodes) {
 
     int* parent = new int[total_nodes];
     int* flow = new int[total_nodes];
-    bool* frontier = new bool[total_nodes];
+    bool* frontier_1 = new bool[total_nodes];
+    bool* frontier_2 = new bool[total_nodes];
     bool* visited = new bool [total_nodes];
     bool* do_change_capacity = new bool[total_nodes];
     
@@ -222,7 +223,7 @@ int edmondskarp(const char* filename, int total_nodes) {
     flow[sink] = 0;
     int* locks = new int[total_nodes];
     int* d_r_capacity, * d_parent, * d_flow, *d_locks;;
-    bool* d_frontier, * d_visited, *d_do_change_capacity;
+    bool* d_frontier_1, * d_frontier_2, * d_visited, *d_do_change_capacity;
 
     size_t locks_size = total_nodes * sizeof(int);
     
@@ -234,9 +235,11 @@ int edmondskarp(const char* filename, int total_nodes) {
     cout << "hi2" << endl;
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
     cout << "hi3" << endl;
-    cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_frontier_1, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_frontier_2, total_nodes * sizeof(bool));
     cout << "hi4" << endl;
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
+    
     cout << "hi5" << endl;
     cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
     cout << "hi6" << endl;
@@ -265,19 +268,18 @@ int edmondskarp(const char* filename, int total_nodes) {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == sink || i == source){
-            frontier[i] = true;
-        }else{
-            frontier[i] = false;
-        }
+        frontier[i] = false;
 
         visited[i] = false;
         do_change_capacity[i] = false;
         }
+        frontier_1[sink] = true
+        frontier_2[source] = true
    
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_frontier_1, frontier_1, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_frontier_1, frontier_1, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
 	    //cout << "hi2" << endl;
@@ -285,17 +287,12 @@ int edmondskarp(const char* filename, int total_nodes) {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!source_reachable && !sink_reachable){
+        while(!met_in_middle){
 	cudaEventRecord(startEvent, 0);
 
-        found_augmenting_path = frontier[sink] && frontier[source];
-
-        if(!found_augmenting_path){
-            break;
-        }
-	
         // Run BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, sink, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier_1, d_visited, total_nodes, source, sink, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier_2, d_visited, total_nodes, source, sink, d_locks);
         bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
@@ -306,8 +303,24 @@ int edmondskarp(const char* filename, int total_nodes) {
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
 
-        cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost); 
+        cudaMemcpy(frontier_1, d_frontier_1, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost); 
+        cudaMemcpy(frontier_1, d_frontier_1, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost); 
+        met_in_middle = true;
+        for (int i = 0; i < total_nodes; ++i) {
+            if (frontier_sink_to_source[i] != frontier_source_to_sink[i]) {
+                met_in_middle = false;
+                break;
         }
+    } 
+        
+        }
+
+        found_augmenting_path = frontier[sink] && frontier[source];
+
+        if(!found_augmenting_path){
+            break;
+        }
+	
 
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
