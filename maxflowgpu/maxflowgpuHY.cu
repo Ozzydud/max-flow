@@ -124,6 +124,26 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
         return true;
 }
 
+bool source_reachable(bool* frontier, int total_nodes, int source) {
+    
+    for (int i = 0; i <= total_nodes-1; ++i) {
+        if (frontier[i]) {
+            return i == source;  // Source node is reachable from at least one node in the frontier
+        }   
+    }
+    return true;  // Source node is not reachable from any node in the frontier
+}
+
+bool isEqual(bool* frontier, bool* frontier2, int total_nodes) {
+    
+    for (int i = 0; i <= total_nodes-1; ++i) {
+        if (frontier[i] == frontier2[i]) {
+            return true;  // Source node is reachable from at least one node in the frontier
+        }   
+    }
+    return false;  // Source node is not reachable from any node in the frontier
+}
+
 
 
 int main() {
@@ -190,7 +210,8 @@ int main() {
 
     int* parent = new int[total_nodes];
     int* flow = new int[total_nodes];
-    bool* frontier = new bool[total_nodes];
+    bool* TDfrontier = new bool[total_nodes];
+    bool* BUfrontier = new bool[total_nodes];
     bool* visited = new bool [total_nodes];
     bool* do_change_capacity = new bool[total_nodes];
     
@@ -199,7 +220,7 @@ int main() {
     flow[source] = 0;
     int* locks = new int[total_nodes];
     int* d_r_capacity, * d_parent, * d_flow, *d_locks;;
-    bool* d_frontier, * d_visited, *d_do_change_capacity;
+    bool* d_TDfrontier, *d_BUfrontier, * d_visited, *d_do_change_capacity;
 
     size_t locks_size = total_nodes * sizeof(int);
     
@@ -211,7 +232,8 @@ int main() {
     cout << "hi2" << endl;
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
     cout << "hi3" << endl;
-    cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_TDfrontier, total_nodes * sizeof(bool));
+    cudaMalloc((void**)&d_BUfrontier, total_nodes * sizeof(bool));
     cout << "hi4" << endl;
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
     cout << "hi5" << endl;
@@ -242,19 +264,18 @@ int main() {
         parent[i] = -1; // Initialize parent array
         flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
-        if(i == source){
-            frontier[i] = true;
-        }else{
-            frontier[i] = false;
-        }
-
+        BUfrontier[i] = false;
+        TDfrontier[i] = false
         visited[i] = false;
         do_change_capacity[i] = false;
         }
+        BUfrontier[sink] = true;
+        TDfrontier[source] = true;
    
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-        cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_TDfrontier, TDfrontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_BUfrontier, BUfrontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
 	    //cout << "hi2" << endl;
@@ -262,11 +283,12 @@ int main() {
 	cudaEventSynchronize(stopEvent3_1);
 	cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
 	totalInitTime += partinitmili;
-        while(!sink_reachable(frontier, total_nodes, sink)){
-	cudaEventRecord(startEvent, 0);
+        while(!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source || isEven(TDfrontier, BUfrontier, total_nodes))){
+	    cudaEventRecord(startEvent, 0);
 	
         // Run BFS kernel
-        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_TDfrontier, d_visited, total_nodes, sink, d_locks);
+        cudaBFS<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_BUfrontier, d_visited, total_nodes, sink, d_locks);
         bfsCounter++;
         // Stop recording the event
         cudaEventRecord(stopEvent, 0);
@@ -278,10 +300,11 @@ int main() {
         avgBFSTime += bfsmili;
         
 
-        cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        cudaMemcpy(TDfrontier, d_TDfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
+        cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
 
-        found_augmenting_path = frontier[sink];
+        found_augmenting_path = (frontier[sink] || frontier[source] || isEven(TDfrontier, BUfrontier, total_nodes));
 
         if(!found_augmenting_path){
             break;
@@ -293,9 +316,50 @@ int main() {
         path_flow = flow[sink];
         max_flow += path_flow;
 
-        for(int i = sink; i != source; i = parent[i]){
-                        do_change_capacity[i] = true;
-                }
+        // Check if source is reachable from sink and vice versa
+// Check if source is reachable from sink and vice versa
+bool source_reachable_from_sink = BUfrontier[source];
+bool sink_reachable_from_source = TDfrontier[sink];
+
+// Handle the case where both source and sink are reachable from each other
+if (source_reachable_from_sink && sink_reachable_from_source) {
+    // Find the common node where both frontiers meet
+    int common_node = -1;
+    for (int i = 0; i < total_nodes; ++i) {
+        if (BUfrontier[i] && TDfrontier[i]) {
+            common_node = i;
+            break;
+        }
+    }
+
+    // Mark the nodes on the path from source to common node
+    for (int i = source; i != common_node; i = parent[i]) {
+        do_change_capacity[i] = true;
+    }
+    // Mark the nodes on the path from sink to common node
+    for (int i = sink; i != common_node; i = parent[i]) {
+        do_change_capacity[i] = true;
+    }
+    // Mark the common node
+    do_change_capacity[common_node] = true;
+} else {
+    // Handle the case where only source is reachable from sink
+    if (source_reachable_from_sink) {
+        for (int i = source; i != sink; i = parent[i]) {
+            do_change_capacity[i] = true;
+        }
+    }
+    // Handle the case where only sink is reachable from source
+    if (sink_reachable_from_source) {
+        for (int i = sink; i != source; i = parent[i]) {
+            do_change_capacity[i] = true;
+        }
+    }
+}
+
+
+
+        
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
 
