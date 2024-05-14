@@ -387,7 +387,7 @@ int edmondskarp(const char* filename, int total_nodes) {
 
 int main(){
     cout << "1000x400500" << endl; 
-    edmondskarp("data/cage11.mtx", 39082);
+    edmondskarp("cage3.mtx", 5);
     cout << "1000x400500 end" << endl; 
     /*
     cout << "5000x1250000" << endl; 
