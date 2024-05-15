@@ -127,7 +127,7 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
 
 
 
-int edmondskarp(const char* filename, int total_nodes) {
+float edmondskarp(const char* filename, int total_nodes) {
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
@@ -366,22 +366,46 @@ int edmondskarp(const char* filename, int total_nodes) {
     cudaEventDestroy(startEvent3_1);
     cudaEventDestroy(stopEvent3_1);
 
-    return 0;
+    return milliseconds;
 }
 
 int main(){
-    cout << "1000x400500" << endl; 
-    edmondskarp("data/10000x2500000.mtx", 10000);
-    cout << "1000x400500 end" << endl; 
-    /*
-    cout << "5000x1250000" << endl; 
-    edmondskarp("data/5000x1250000.mtx", 5000);
-    cout << "5000x1250000 end" << endl; 
+    float ms = 0;
+    cout << "cage3.mtx" << endl; 
+    float test = edmondskarp("cage3.mtx", 5);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("cage3.mtx", 5);
+    }
 
-    cout << "10000x2500000" << endl; 
-    edmondskarp("data/10000x2500000.mtx", 10000);
-    cout << "10000x2500000 end" << endl; 
-*/
+    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
+
+
+    ms = 0;
+    cout << "cage9.mtx" << endl; 
+    float test = edmondskarp("data/cage9.mtx", 3534);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage9.mtx", 3534);
+    }
+
+    cout << "cage9.mtx end with a avg speed of" << ms/10 << endl; 
+
+    ms = 0;
+    cout << "cage10.mtx" << endl; 
+    float test = edmondskarp("data/cage10.mtx", 11397);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage10.mtx", 11397);
+    }
+
+    cout << "cage10.mtx end with a avg speed of" << ms/10 << endl; 
+
+    ms = 0;
+    cout << "cage11.mtx" << endl; 
+    float test = edmondskarp("data/cage11.mtx", 39082);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage11.mtx", 39082);
+    }
+
+    cout << "cage11.mtx end with a avg speed of" << ms/10 << endl; 
     
     
 
