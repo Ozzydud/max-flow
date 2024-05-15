@@ -146,7 +146,7 @@ bool isEqual(bool* frontier, bool* frontier2, int total_nodes) {
 
 
 
-int main() {
+float edmondskarp(const char* filename, int total_nodes) {
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
@@ -156,7 +156,7 @@ int main() {
     float initmili = 0.0f;
     float totalInitTime = 0.0f;
     cudaEventRecord(startEvent3);
-    int total_nodes = 5; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+     // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
 
 
@@ -201,7 +201,7 @@ int main() {
 
 
 
-    readInput("cage3.mtx", total_nodes, residual);
+    readInput(filename, total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
@@ -382,8 +382,25 @@ if (source_reachable_from_sink && sink_reachable_from_source) {
 	//cout << path_flow << endl;
 	counter++;
 	//cout << "Counter is: " << counter << endl;
+    if(filename == "cage3.mtx"){
+        if(max_flow == 727){
+            break;
+        } 
+    }else if(filename == "data/cage9.mtx"){
+        if(max_flow == 0){
+            break;
+        }
+    }else if(filename == "data/cage10.mtx"){
+        if(max_flow == 0){
+            break;
+        }
+    }else if(filename == "data/cage11.mtx"){
+        if(max_flow == 0){
+            break;
+        }
+    }
 
-    } while(counter != 3); //found_augmenting_path);
+    } while(found_augmenting_path); //found_augmenting_path);
     cout << "Counter is: " << counter << endl;
     // Record stop time
     cudaEventRecord(stop);
@@ -431,7 +448,50 @@ if (source_reachable_from_sink && sink_reachable_from_source) {
     cudaEventDestroy(startEvent3_1);
     cudaEventDestroy(stopEvent3_1);
 
-    return 0;
+    return milliseconds;
 }
 
 
+int main(){
+    float ms = 0;
+    cout << "cage3.mtx" << endl; 
+    float test = edmondskarp("cage3.mtx", 5);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("cage3.mtx", 5);
+    }
+
+    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
+
+
+    ms = 0;
+    cout << "cage9.mtx" << endl; 
+    float test = edmondskarp("data/cage9.mtx", 3534);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage9.mtx", 3534);
+    }
+
+    cout << "cage9.mtx end with a avg speed of" << ms/10 << endl; 
+
+    ms = 0;
+    cout << "cage10.mtx" << endl; 
+    float test = edmondskarp("data/cage10.mtx", 11397);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage10.mtx", 11397);
+    }
+
+    cout << "cage10.mtx end with a avg speed of" << ms/10 << endl; 
+
+    ms = 0;
+    cout << "cage11.mtx" << endl; 
+    float test = edmondskarp("data/cage11.mtx", 39082);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage11.mtx", 39082);
+    }
+
+    cout << "cage11.mtx end with a avg speed of" << ms/10 << endl; 
+    
+    
+
+    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+
+}

@@ -126,7 +126,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 
-int main() {
+float edmondskarp(const char* filename, int total_nodes) {
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
@@ -136,7 +136,7 @@ int main() {
     float initmili = 0.0f;
     float totalInitTime = 0.0f;
     cudaEventRecord(startEvent3);
-    int total_nodes = 10000; // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
     int* residual;
 
 
@@ -181,7 +181,7 @@ int main() {
 
 
 
-    readInput("data/10000x2500000.mtx", total_nodes, residual);
+    readInput(filename, total_nodes, residual);
     cout << "data read" << endl;
 
     int source = 0;
@@ -363,7 +363,52 @@ int main() {
     cudaEventDestroy(startEvent3_1);
     cudaEventDestroy(stopEvent3_1);
 
-    return 0;
+    return milliseconds;
 }
+
+int main(){
+    float ms = 0;
+    cout << "cage3.mtx" << endl; 
+    float test = edmondskarp("cage3.mtx", 5);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("cage3.mtx", 5);
+    }
+
+    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
+
+
+    ms = 0;
+    cout << "cage9.mtx" << endl; 
+    float test = edmondskarp("data/cage9.mtx", 3534);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage9.mtx", 3534);
+    }
+
+    cout << "cage9.mtx end with a avg speed of" << ms/10 << endl; 
+
+    ms = 0;
+    cout << "cage10.mtx" << endl; 
+    float test = edmondskarp("data/cage10.mtx", 11397);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage10.mtx", 11397);
+    }
+
+    cout << "cage10.mtx end with a avg speed of" << ms/10 << endl; 
+
+    ms = 0;
+    cout << "cage11.mtx" << endl; 
+    float test = edmondskarp("data/cage11.mtx", 39082);
+    for(i = 0; i<10; i++){
+        ms += edmondskarp("data/cage11.mtx", 39082);
+    }
+
+    cout << "cage11.mtx end with a avg speed of" << ms/10 << endl; 
+    
+    
+
+    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
+
+}
+
 
 
