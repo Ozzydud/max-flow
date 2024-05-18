@@ -276,6 +276,7 @@ float edmondskarp(const char* filename, int total_nodes) {
                 found_augmenting_path = false;
             }
         }
+        cout << max_flow << endl;
         counter++;
     } while (found_augmenting_path);
 
