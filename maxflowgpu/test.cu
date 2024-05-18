@@ -211,19 +211,18 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
     int block_size = 512;
     int grid_size = (total_nodes + block_size - 1) / block_size;
 
-    int counter = 0;
-    cudaEventRecord(stopEvent3);
-    cudaEventSynchronize(stopEvent3);
-    cudaEventElapsedTime(&initmili, startEvent3, stopEvent3);
-    totalInitTime += initmili;
+    double mu = total_nodes;
 
-    int mu = total_nodes * total_nodes; // total number of edges (assuming a fully connected graph for simplicity)
+    int counter = 0;
 
     do {
         cudaEventRecord(startEvent3_1);
-        for (int i = 0; i < total_nodes; ++i) {
+
+        found_augmenting_path = false;
+
+        for (int i = 0; i < total_nodes; i++) {
             parent[i] = -1;
-            flow[i] = INF;
+            flow[i] = 0;
             locks[i] = 0;
             frontier[i] = false;
             visited[i] = false;
