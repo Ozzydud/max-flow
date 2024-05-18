@@ -44,6 +44,7 @@ __global__ void bfsBottomUp(int *rGraph, int *parent, bool *visited, bool *front
 
 __host__ bool bfs(int *rGraph, int s, int t, int *parent, int vertices) {
     bool *visited = new bool[vertices];
+    bool *frontier = new bool[vertices];
     bool *d_visited;
     bool *d_frontier;
     bool *d_nextFrontier;
@@ -60,11 +61,9 @@ __host__ bool bfs(int *rGraph, int s, int t, int *parent, int vertices) {
     cudaMemset(d_visited, 0, sizeof(bool) * vertices);
     cudaMemset(d_frontier, 0, sizeof(bool) * vertices);
     cudaMemset(d_nextFrontier, 0, sizeof(bool) * vertices);
-
-    vector<bool> frontier(vertices, false);
     frontier[s] = true;
 
-    cudaMemcpy(d_frontier, frontier.data(), sizeof(bool) * vertices, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_frontier, frontier, sizeof(bool) * vertices, cudaMemcpyHostToDevice);
 
     int blockSize = 512;
     int numBlocks = (vertices + blockSize - 1) / blockSize;
@@ -77,7 +76,7 @@ __host__ bool bfs(int *rGraph, int s, int t, int *parent, int vertices) {
         bfsTopDown<<<numBlocks, blockSize>>>(d_rGraph, d_parent, d_visited, d_nextFrontier, d_frontier, vertices);
         cudaDeviceSynchronize();
 
-        cudaMemcpy(frontier.data(), d_frontier, sizeof(bool) * vertices, cudaMemcpyDeviceToHost);
+        cudaMemcpy(frontier, d_frontier, sizeof(bool) * vertices, cudaMemcpyDeviceToHost);
         cudaMemcpy(visited, d_visited, sizeof(bool) * vertices, cudaMemcpyDeviceToHost);
 
         bool done = visited[t];
