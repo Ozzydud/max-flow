@@ -12,23 +12,22 @@
 using namespace std;
 
 // CUDA kernel for the top-down BFS
-__global__ void bfsTopDown(int *rGraph, int *parent, bool *visited, int *frontier, int vertices) {
+__global__ void bfsTopDown(int *rGraph, int *parent, bool *visited, bool *frontier, bool *nextFrontier, int vertices) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (idx < vertices && frontier[idx]) {
-        frontier[idx] = false;
         for (int v = 0; v < vertices; ++v) {
             if (!visited[v] && rGraph[idx * vertices + v] > 0) {
                 visited[v] = true;
                 parent[v] = idx;
-                frontier[v] = true;
+                nextFrontier[v] = true;
             }
         }
     }
 }
 
 // CUDA kernel for the bottom-up BFS
-__global__ void bfsBottomUp(int *rGraph, int *parent, bool *visited, int *frontier, int vertices) {
+__global__ void bfsBottomUp(int *rGraph, int *parent, bool *visited, bool *frontier, bool *nextFrontier, int vertices) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (idx < vertices && !visited[idx]) {
@@ -36,7 +35,7 @@ __global__ void bfsBottomUp(int *rGraph, int *parent, bool *visited, int *fronti
             if (frontier[u] && rGraph[u * vertices + idx] > 0) {
                 visited[idx] = true;
                 parent[idx] = u;
-                frontier[idx] = true;
+                nextFrontier[idx] = true;
                 break;
             }
         }
@@ -44,70 +43,71 @@ __global__ void bfsBottomUp(int *rGraph, int *parent, bool *visited, int *fronti
 }
 
 __host__ bool bfs(int *rGraph, int s, int t, int *parent, int vertices) {
-    bool *visited;
+    bool *visited = new bool[vertices];
     bool *d_visited;
+    bool *d_frontier;
+    bool *d_nextFrontier;
     int *d_parent;
-    int *frontier;
-    int *d_frontier;
     int *d_rGraph;
 
-    visited = new bool[vertices];
-    memset(visited, 0, sizeof(bool) * vertices);
-
     cudaMalloc((void**)&d_visited, sizeof(bool) * vertices);
+    cudaMalloc((void**)&d_frontier, sizeof(bool) * vertices);
+    cudaMalloc((void**)&d_nextFrontier, sizeof(bool) * vertices);
     cudaMalloc((void**)&d_parent, sizeof(int) * vertices);
-    cudaMalloc((void**)&d_frontier, sizeof(int) * vertices);
     cudaMalloc((void**)&d_rGraph, sizeof(int) * vertices * vertices);
 
     cudaMemcpy(d_rGraph, rGraph, sizeof(int) * vertices * vertices, cudaMemcpyHostToDevice);
-    cudaMemcpy(d_visited, visited, sizeof(bool) * vertices, cudaMemcpyHostToDevice);
+    cudaMemset(d_visited, 0, sizeof(bool) * vertices);
+    cudaMemset(d_frontier, 0, sizeof(bool) * vertices);
+    cudaMemset(d_nextFrontier, 0, sizeof(bool) * vertices);
 
-    frontier = new int[vertices];
-    memset(frontier, 0, sizeof(int) * vertices);
-    frontier[s] = 1;
+    vector<bool> frontier(vertices, false);
+    frontier[s] = true;
 
-    cudaMemcpy(d_frontier, frontier, sizeof(int) * vertices, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_frontier, frontier.data(), sizeof(bool) * vertices, cudaMemcpyHostToDevice);
 
     int blockSize = 512;
     int numBlocks = (vertices + blockSize - 1) / blockSize;
 
+    bool pathFound = false;
     while (true) {
-        cudaMemcpy(d_frontier, frontier, sizeof(int) * vertices, cudaMemcpyHostToDevice);
+        cudaMemcpy(d_nextFrontier, d_frontier, sizeof(bool) * vertices, cudaMemcpyDeviceToDevice);
+        cudaMemset(d_frontier, 0, sizeof(bool) * vertices);
 
-        bool *h_visited = new bool[vertices];
-        cudaMemcpy(h_visited, d_visited, sizeof(bool) * vertices, cudaMemcpyDeviceToHost);
+        bfsTopDown<<<numBlocks, blockSize>>>(d_rGraph, d_parent, d_visited, d_nextFrontier, d_frontier, vertices);
+        cudaDeviceSynchronize();
 
-        bool topDown = true;
-        for (int i = 0; i < vertices; i++) {
-            if (frontier[i] && !h_visited[i]) {
-                topDown = false;
-                break;
-            }
-        }
-        delete[] h_visited;
-
-        if (topDown) {
-            bfsTopDown<<<numBlocks, blockSize>>>(d_rGraph, d_parent, d_visited, d_frontier, vertices);
-        } else {
-            bfsBottomUp<<<numBlocks, blockSize>>>(d_rGraph, d_parent, d_visited, d_frontier, vertices);
-        }
-
+        cudaMemcpy(frontier.data(), d_frontier, sizeof(bool) * vertices, cudaMemcpyDeviceToHost);
         cudaMemcpy(visited, d_visited, sizeof(bool) * vertices, cudaMemcpyDeviceToHost);
 
         bool done = visited[t];
-        if (done) break;
+        if (done) {
+            pathFound = true;
+            break;
+        }
+
+        bool anyFrontier = false;
+        for (int i = 0; i < vertices; ++i) {
+            if (frontier[i]) {
+                anyFrontier = true;
+                break;
+            }
+        }
+        if (!anyFrontier) {
+            break;
+        }
     }
 
     cudaMemcpy(parent, d_parent, sizeof(int) * vertices, cudaMemcpyDeviceToHost);
 
     delete[] visited;
-    delete[] frontier;
     cudaFree(d_visited);
     cudaFree(d_parent);
     cudaFree(d_frontier);
+    cudaFree(d_nextFrontier);
     cudaFree(d_rGraph);
 
-    return visited[t];
+    return pathFound;
 }
 
 int edmondsKarp(int *graph, int s, int t, int vertices) {
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
 
     readInput(filename, vertices, graph);
 
-    cout << "The maximum possible flow is " << edmondsKarp(graph, 0, vertices-1, vertices) << endl;
+    cout << "The maximum possible flow is " << edmondsKarp(graph, 0, 4, vertices) << endl;
 
     delete[] graph;
     return 0;
