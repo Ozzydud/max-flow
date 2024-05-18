@@ -410,7 +410,7 @@ if (source_reachable_from_sink && sink_reachable_from_source) {
     cout << "Total AUG time is " << avgAUGTime << "ms\n";
     cout << "Average AUG time is: " << avgAUGTime / augCounter << "ms\n";
     cout << "Total init time is: " << totalInitTime << "ms\n";
-
+    
     cout << "Maximum Flow: " << max_flow << endl;
     
 
