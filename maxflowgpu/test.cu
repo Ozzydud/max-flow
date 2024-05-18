@@ -134,7 +134,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink) {
     return false;
 }
 
-float edmondskarp(const char* filename, int total_nodes) {
+float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
@@ -212,6 +212,8 @@ float edmondskarp(const char* filename, int total_nodes) {
     cudaEventElapsedTime(&initmili, startEvent3, stopEvent3);
     totalInitTime += initmili;
 
+    int mu = total_nodes * total_nodes; // total number of edges (assuming a fully connected graph for simplicity)
+
     do {
         cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
@@ -234,49 +236,59 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
         totalInitTime += partinitmili;
 
-        found_augmenting_path = false;
+        // BFS variables
+        int mf = 0; // initially, the number of traversed edges is zero
+        int prev_mf = -1;
 
-        while (!found_augmenting_path) {
-            cudaEventRecord(startEvent);
-            bfsTD <<< grid_size, block_size >>> (d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+        while (true) {
+            prev_mf = mf;
+
+            // Choose BFS strategy based on the current number of traversed edges
+            if (mf > mu / alpha) {
+                // Bottom-Up BFS
+                bfsBU<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
+            } else {
+                // Top-Down BFS
+                bfsTD<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+            }
+
             cudaDeviceSynchronize();
-            bfsBU <<< grid_size, block_size >>> (d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
-            cudaDeviceSynchronize();
-            cudaEventRecord(stopEvent);
-            cudaEventSynchronize(stopEvent);
-            cudaEventElapsedTime(&milliseconds, startEvent, stopEvent);
-            avgBFSTime += milliseconds;
-            bfsCounter++;
+
+            // Copy the frontier array back to host to check for sink reachability
             cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
 
             if (sink_reachable(frontier, total_nodes, sink)) {
                 found_augmenting_path = true;
-                cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
-                cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
-                path_flow = flow[sink];
-                max_flow += path_flow;
+                break;
+            }
 
-                int v = sink;
-                while (v != source) {
-                    int u = parent[v];
-                    do_change_capacity[v] = true;
-                    v = u;
-                }
-                cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+            // Update the number of traversed edges (mf)
+            mf = 0;
+            cudaMemcpyFromSymbol(&mf, d_mf, sizeof(int), 0, cudaMemcpyDeviceToHost);
 
-                cudaEventRecord(startEvent2);
-                cudaAugment_path <<< grid_size, block_size >>> (d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
-                cudaDeviceSynchronize();
-                cudaEventRecord(stopEvent2);
-                cudaEventSynchronize(stopEvent2);
-                cudaEventElapsedTime(&milliseconds, startEvent2, stopEvent2);
-                avgAUGTime += milliseconds;
-                augCounter++;
-            } else {
+            // If the number of traversed edges does not change, break the loop
+            if (mf == prev_mf) {
                 found_augmenting_path = false;
+                break;
             }
         }
-        cout << max_flow << endl;
+
+        if (found_augmenting_path) {
+            path_flow = flow[sink];
+
+            for (int v = sink; v != source; v = parent[v]) {
+                int u = parent[v];
+                do_change_capacity[v] = true;
+            }
+
+            cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+
+            cudaAugment_path<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+            cudaDeviceSynchronize();
+
+            max_flow += path_flow;
+        }
+
         counter++;
     } while (found_augmenting_path);
 
