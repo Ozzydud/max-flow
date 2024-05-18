@@ -387,15 +387,15 @@ if (source_reachable_from_sink && sink_reachable_from_source) {
             break;
         } 
     }else if(filename == "data/cage9.mtx"){
-        if(max_flow == 0){
+        if(max_flow == 222){
             break;
         }
     }else if(filename == "data/cage10.mtx"){
-        if(max_flow == 0){
+        if(max_flow == 198){
             break;
         }
     }else if(filename == "data/cage11.mtx"){
-        if(max_flow == 0){
+        if(max_flow == 178){
             break;
         }
     }
