@@ -373,7 +373,7 @@ int main(){
     float ms = 0;
     cout << "cage3.mtx" << endl; 
     float test = edmondskarp("cage3.mtx", 5);
-    for(i = 0; i<10; i++){
+    for(int i = 0; i<10; i++){
         ms += edmondskarp("cage3.mtx", 5);
     }
 
@@ -382,8 +382,8 @@ int main(){
 
     ms = 0;
     cout << "cage9.mtx" << endl; 
-    float test = edmondskarp("data/cage9.mtx", 3534);
-    for(i = 0; i<10; i++){
+    test = edmondskarp("data/cage9.mtx", 3534);
+    for(int i = 0; i<10; i++){
         ms += edmondskarp("data/cage9.mtx", 3534);
     }
 
@@ -391,8 +391,8 @@ int main(){
 
     ms = 0;
     cout << "cage10.mtx" << endl; 
-    float test = edmondskarp("data/cage10.mtx", 11397);
-    for(i = 0; i<10; i++){
+    test = edmondskarp("data/cage10.mtx", 11397);
+    for(int i = 0; i<10; i++){
         ms += edmondskarp("data/cage10.mtx", 11397);
     }
 
@@ -400,15 +400,10 @@ int main(){
 
     ms = 0;
     cout << "cage11.mtx" << endl; 
-    float test = edmondskarp("data/cage11.mtx", 39082);
-    for(i = 0; i<10; i++){
+    test = edmondskarp("data/cage11.mtx", 39082);
+    for(int i = 0; i<10; i++){
         ms += edmondskarp("data/cage11.mtx", 39082);
     }
 
     cout << "cage11.mtx end with a avg speed of" << ms/10 << endl; 
-    
-    
-
-    // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
-
 }
