@@ -189,10 +189,10 @@ int main(int argc, char* argv[]) {
     }
 
     const char* filename = argv[1];
-    int vertices = 6; // You can change this based on your input graph
+    int vertices = 5; // You can change this based on your input graph
     int *graph = new int[vertices * vertices];
     memset(graph, 0, sizeof(int) * vertices * vertices);
-    
+
     readInput(filename, vertices, graph);
 
     cout << "The maximum possible flow is " << edmondsKarp(graph, 0, vertices-1, vertices) << endl;
