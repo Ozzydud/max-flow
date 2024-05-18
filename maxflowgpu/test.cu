@@ -52,7 +52,7 @@ void readInput(const char* filename, int total_nodes, int* residual) {
     file.close();
 }
 
-__global__ void bfsTD(int *r_capacity, int *parent, int *flow, bool *frontier, bool *visited, int vertices, int sink, int* locks) {
+__global__ void bfsTD(int *r_capacity, int *parent, int *flow, bool *frontier, bool *visited, int vertices, int sink, int* locks, int* mf) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
@@ -68,6 +68,7 @@ __global__ void bfsTD(int *r_capacity, int *parent, int *flow, bool *frontier, b
                 locks[i] = 0;
                 parent[i] = Idx;
                 flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+                atomicAdd(mf, 1);
             }
         }
 
@@ -80,12 +81,13 @@ __global__ void bfsTD(int *r_capacity, int *parent, int *flow, bool *frontier, b
                 locks[i] = 0;
                 parent[i] = Idx;
                 flow[i] = min(flow[Idx], r_capacity[Idx * vertices + i]);
+                atomicAdd(mf, 1);
             }
         }
     }
 }
 
-__global__ void bfsBU(int *r_capacity, int *parent, int *flow, bool *frontier, bool *visited, int vertices, int source, int* locks) {
+__global__ void bfsBU(int *r_capacity, int *parent, int *flow, bool *frontier, bool *visited, int vertices, int source, int* locks, int* mf) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (!frontier[source] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
@@ -100,6 +102,7 @@ __global__ void bfsBU(int *r_capacity, int *parent, int *flow, bool *frontier, b
                 locks[i] = 0;
                 parent[i] = Idx;
                 flow[i] = min(flow[Idx], r_capacity[i * vertices + Idx]);
+                atomicAdd(mf, 1);
             }
         }
 
@@ -112,6 +115,7 @@ __global__ void bfsBU(int *r_capacity, int *parent, int *flow, bool *frontier, b
                 locks[i] = 0;
                 parent[i] = Idx;
                 flow[i] = min(flow[Idx], r_capacity[i * vertices + Idx]);
+                atomicAdd(mf, 1);
             }
         }
     }
@@ -186,7 +190,7 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
     bool* visited = new bool[total_nodes];
     bool* do_change_capacity = new bool[total_nodes];
     int* locks = new int[total_nodes];
-    int* d_r_capacity, *d_parent, *d_flow, *d_locks;
+    int* d_r_capacity, *d_parent, *d_flow, *d_locks, *d_mf;
     bool* d_frontier, *d_visited, *d_do_change_capacity;
 
     size_t locks_size = total_nodes * sizeof(int);
@@ -198,6 +202,7 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
     cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
     cudaMalloc((void**)&d_locks, locks_size);
+    cudaMalloc((void**)&d_mf, sizeof(int));
 
     cudaMemcpy(d_r_capacity, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
 
@@ -220,16 +225,19 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
             parent[i] = -1;
             flow[i] = INF;
             locks[i] = 0;
-            frontier[i] = (i == source);
+            frontier[i] = false;
             visited[i] = false;
             do_change_capacity[i] = false;
         }
+
+        frontier[source] = true;
 
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_frontier, frontier, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_visited, visited, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cudaMemcpy(d_locks, locks, locks_size, cudaMemcpyHostToDevice);
+        cudaMemset(d_mf, 0, sizeof(int)); // Initialize d_mf to 0
 
         cudaEventRecord(stopEvent3_1);
         cudaEventSynchronize(stopEvent3_1);
@@ -246,10 +254,10 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
             // Choose BFS strategy based on the current number of traversed edges
             if (mf > mu / alpha) {
                 // Bottom-Up BFS
-                bfsBU<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
+                bfsBU<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks, d_mf);
             } else {
                 // Top-Down BFS
-                bfsTD<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks);
+                bfsTD<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, sink, d_locks, d_mf);
             }
 
             cudaDeviceSynchronize();
@@ -264,7 +272,7 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
 
             // Update the number of traversed edges (mf)
             mf = 0;
-            cudaMemcpyFromSymbol(&mf, d_mf, sizeof(int), 0, cudaMemcpyDeviceToHost);
+            cudaMemcpy(&mf, d_mf, sizeof(int), cudaMemcpyDeviceToHost);
 
             // If the number of traversed edges does not change, break the loop
             if (mf == prev_mf) {
@@ -277,7 +285,6 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
             path_flow = flow[sink];
 
             for (int v = sink; v != source; v = parent[v]) {
-                int u = parent[v];
                 do_change_capacity[v] = true;
             }
 
@@ -304,6 +311,7 @@ float edmondskarp(const char* filename, int total_nodes, double alpha = 0.5) {
     cudaFree(d_visited);
     cudaFree(d_do_change_capacity);
     cudaFree(d_locks);
+    cudaFree(d_mf); // Freeing the memory for d_mf
     delete[] residual;
     delete[] parent;
     delete[] flow;
