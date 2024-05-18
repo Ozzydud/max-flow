@@ -226,7 +226,7 @@ float edmondskarp(const char* filename, int total_nodes) {
 
     bool found_augmenting_path;
     int max_flow = 0;
-    int block_size = 1024;
+    int block_size = 512;
     int grid_size = ceil(total_nodes * 1.0 / block_size); //(total_nodes + block_size - 1) / block_size;
 
     
@@ -374,35 +374,38 @@ int main(){
         ms += edmondskarp("cage3.mtx", 5);
     }
 
-    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
+    
 
 
-    ms = 0;
+    float ms2 = 0;
     cout << "cage9.mtx" << endl; 
     test = edmondskarp("data/cage9.mtx", 3534);
     for(int i = 0; i<10; i++){
-        ms += edmondskarp("data/cage9.mtx", 3534);
+        ms2 += edmondskarp("data/cage9.mtx", 3534);
     }
 
-    cout << "cage9.mtx end with a avg speed of" << ms/10 << endl; 
+    
 
-    ms = 0;
+    float ms3 = 0;
     cout << "cage10.mtx" << endl; 
     test = edmondskarp("data/cage10.mtx", 11397);
     for(int i = 0; i<10; i++){
-        ms += edmondskarp("data/cage10.mtx", 11397);
+        ms3 += edmondskarp("data/cage10.mtx", 11397);
     }
 
-    cout << "cage10.mtx end with a avg speed of" << ms/10 << endl; 
+    
 
-    ms = 0;
+    float ms4 = 0;
     cout << "cage11.mtx" << endl; 
     test = edmondskarp("data/cage11.mtx", 39082);
     for(int i = 0; i<10; i++){
-        ms += edmondskarp("data/cage11.mtx", 39082);
+        ms4 += edmondskarp("data/cage11.mtx", 39082);
     }
 
-    cout << "cage11.mtx end with a avg speed of" << ms/10 << endl; 
+    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
+    cout << "cage9.mtx end with a avg speed of" << ms2/10 << endl; 
+    cout << "cage10.mtx end with a avg speed of" << ms3/10 << endl; 
+    cout << "cage11.mtx end with a avg speed of" << ms4/10 << endl; 
     
     
 
