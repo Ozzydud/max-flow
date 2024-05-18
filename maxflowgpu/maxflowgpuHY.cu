@@ -304,7 +304,6 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaMemcpy(BUfrontier, d_BUfrontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
 
         }
-        cout << TDfrontier[sink] << BUfrontier[source] << isEqual(TDfrontier, BUfrontier, total_nodes) << endl;
         found_augmenting_path = (!sink_reachable(TDfrontier, total_nodes, sink) || !source_reachable(BUfrontier, total_nodes, source) || isEqual(TDfrontier, BUfrontier, total_nodes));
 
         if(!found_augmenting_path){
@@ -316,7 +315,6 @@ float edmondskarp(const char* filename, int total_nodes) {
 
         path_flow = flow[sink];
         max_flow += path_flow;
-        cout << max_flow << endl;
 
         // Check if source is reachable from sink and vice versa
 // Check if source is reachable from sink and vice versa
