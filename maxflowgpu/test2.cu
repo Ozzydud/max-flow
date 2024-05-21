@@ -55,10 +55,15 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
     if (u < n && frontier[u]) {
         for (int v = 0; v < n; ++v) {
             if (adjMatrix[u * n + v] > 0 && !visited[v]) {
-                newFrontier[v] = true;
-                visited[v] = true;
-                parent[v] = u;
-                flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
+                int edgeIndex = u * n + v;
+                while (atomicCAS(&locks[edgeIndex], 0, 1) != 0);
+                if (!visited[v]) {
+                    newFrontier[v] = true;
+                    visited[v] = true;
+                    parent[v] = u;
+                    flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
+                }
+                atomicExch(&locks[edgeIndex], 0);
             }
         }
     }
@@ -69,15 +74,21 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
     if (v < n && !visited[v]) {
         for (int u = 0; u < n; ++u) {
             if (adjMatrix[u * n + v] > 0 && frontier[u]) {
-                newFrontier[v] = true;
-                visited[v] = true;
-                parent[v] = u;
-                flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
+                int edgeIndex = u * n + v;
+                while (atomicCAS(&locks[edgeIndex], 0, 1) != 0);
+                if (!visited[v]) {
+                    newFrontier[v] = true;
+                    visited[v] = true;
+                    parent[v] = u;
+                    flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
+                }
+                atomicExch(&locks[edgeIndex], 0);
                 break;
             }
         }
     }
 }
+
 
 void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
     bool *frontier, *newFrontier;
@@ -213,6 +224,8 @@ int main(int argc, char* argv[]) {
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
             cout << "test1" << endl;
+
+            cudaDeviceSynchronize();
 
             // Count new frontier size and decide if we should switch approach
             frontierSize = 0;
