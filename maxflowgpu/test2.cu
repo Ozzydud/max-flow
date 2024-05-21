@@ -7,7 +7,7 @@
 #include <string>
 #include <climits>
 
-#define N 11397 // Number of nodes (example size)
+#define N 3534 // Number of nodes (example size)
 
 using namespace std;
 
