@@ -152,10 +152,8 @@ int main(int argc, char* argv[]) {
             int numBlocks = (N + blockSize - 1) / blockSize;
 
             if (isTopDown) {
-                cout << "TD" << endl;
                 topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             } else {
-                cout << "BU" << endl;
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
 
