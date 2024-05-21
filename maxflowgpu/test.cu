@@ -98,11 +98,22 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 }
 
 bool source_reachable(bool* frontier, int total_nodes, int source) {
-    return frontier[source];
+    
+    for (int i = 0; i <= total_nodes-1; ++i) {
+        if (frontier[i]) {
+            return i == source;  // Source node is reachable from at least one node in the frontier
+        }   
+    }
+    return true;  // Source node is not reachable from any node in the frontier
 }
 
-bool sink_reachable(bool* frontier, int total_nodes, int sink) {
-    return frontier[sink];
+bool sink_reachable(bool* frontier, int total_nodes, int sink){
+    for (int i = total_nodes-1; i > -1; --i) {
+                if(frontier[i]){
+                        return i == sink;
+                }
+        }
+        return true;
 }
 
 float edmondskarp(const char* filename, int total_nodes) {
