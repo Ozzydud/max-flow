@@ -263,7 +263,7 @@ float edmondskarp(const char* filename, int total_nodes) {
             }
             old_work = new_work;
         }
-        if (!did_use_BU) {
+        if (did_use_BU) {
             cout << "sink" << endl;
             found_augmenting_path = frontier[sink];
         } else {
