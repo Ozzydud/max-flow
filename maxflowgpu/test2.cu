@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-#define N 5 // Number of nodes (example size)
+#define N 3534 // Number of nodes (example size)
 
 using namespace std;
 
@@ -240,6 +240,7 @@ int main(int argc, char* argv[]) {
 
         int pathFlow = flow[N - 1];
         maxFlow += pathFlow;
+        cout << maxFlow << endl;
 
         int v = N - 1;
         while (parent[v] != -1) {
