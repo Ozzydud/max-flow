@@ -62,10 +62,10 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
     int u = blockIdx.x * blockDim.x + threadIdx.x;
     if (u < n && frontier[u]) {
         for (int v = 0; v < n; ++v) {
-            if(atomicCAS(locks + u, 0, 1) == 1){
+            if (adjMatrix[u * n + v] > 0 && !visited[v]) {
+                if(atomicCAS(locks + u, 0, 1) == 1){
             continue;
         }
-            if (adjMatrix[u * n + v] > 0 && !visited[v]) {
                 newFrontier[v] = true;
                 visited[v] = true;
                 parent[v] = u;
@@ -79,10 +79,10 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
     int v = blockIdx.x * blockDim.x + threadIdx.x;
     if (v < n && !visited[v]) {
         for (int u = 0; u < n; ++u) {
-            if(atomicCAS(locks + v, 0, 1) == 1){
+            if (adjMatrix[u * n + v] > 0 && frontier[u]) {
+                if(atomicCAS(locks + v, 0, 1) == 1){
             continue;
         }
-            if (adjMatrix[u * n + v] > 0 && frontier[u]) {
                 newFrontier[v] = true;
                 visited[v] = true;
                 parent[v] = u;
