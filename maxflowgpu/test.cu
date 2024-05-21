@@ -79,7 +79,7 @@ __global__ void cudaBFS_BottomUp(int *r_capacity, int *parent, int *flow, bool *
         visited[Idx] = true;
         for (int i = 0; i < vertices; i++) {
             if (!visited[i] && !frontier[i] && r_capacity[i * vertices + Idx] > 0) {
-                if (atomicCAS(locks + Idx, 0, 1) == 1 || frontier[i]) {
+                if (atomicCAS(locks + i, 0, 1) == 1 || frontier[i]) {
                     continue;
                 }
                 frontier[i] = true;
@@ -243,7 +243,6 @@ float edmondskarp(const char* filename, int total_nodes) {
 
             cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
             cudaMemcpy(visited, d_visited, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
-
             new_work = 0;
             for (int i = 0; i < total_nodes; i++) {
                 if (visited[i]) {
