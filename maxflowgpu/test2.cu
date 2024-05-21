@@ -58,10 +58,13 @@ void readInput(const char* filename, int total_nodes, int* residual) {
     file.close();
 }
 
-__global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow) {
+__global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow, int* locks) {
     int u = blockIdx.x * blockDim.x + threadIdx.x;
-    if (u < n && frontier[u]) {
+    if (u < n) {
         for (int v = 0; v < n; ++v) {
+            if(atomicCAS(locks + u, 0, 1) == 1 && frontier[u]){
+            continue;
+        }
             if (adjMatrix[u * n + v] > 0 && !visited[v]) {
                 newFrontier[v] = true;
                 visited[v] = true;
@@ -72,10 +75,13 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
     }
 }
 
-__global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow) {
+__global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow, int* locks) {
     int v = blockIdx.x * blockDim.x + threadIdx.x;
-    if (v < n && !visited[v]) {
+    if (v < n) {
         for (int u = 0; u < n; ++u) {
+            if(atomicCAS(locks + v, 0, 1) == 1 && !visited[v]){
+            continue;
+        }
             if (adjMatrix[u * n + v] > 0 && frontier[u]) {
                 newFrontier[v] = true;
                 visited[v] = true;
@@ -89,8 +95,9 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
 
 void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
     bool *frontier, *newFrontier;
-    int *visited, *parent, *flow;
+    int *visited, *parent, *flow, *locks;
 
+    cudaMallocManaged(&locks, n * sizeof(int));
     cudaMallocManaged(&frontier, n * sizeof(bool));
     cudaMallocManaged(&newFrontier, n * sizeof(bool));
     cudaMallocManaged(&visited, n * sizeof(int));
@@ -103,6 +110,7 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
         visited[i] = 0;
         parent[i] = -1;
         flow[i] = 0;
+        locks[i] = 0;
     }
     frontier[source] = true;
     visited[source] = true;
@@ -116,9 +124,9 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
         int numBlocks = (n + blockSize - 1) / blockSize;
 
         if (isTopDown) {
-            topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow);
+            topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow, locks);
         } else {
-            bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow);
+            bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow, locks);
         }
 
         cudaDeviceSynchronize();
@@ -158,6 +166,7 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
     cudaFree(visited);
     cudaFree(parent);
     cudaFree(flow);
+    cudaFree(locks);
 }
 
 int main(int argc, char* argv[]) {
@@ -183,9 +192,12 @@ int main(int argc, char* argv[]) {
     int maxFlow = 0;
     while (true) {
         bool *frontier, *newFrontier;
-        int *visited, *parent, *flow;
+        int *visited, *parent, *flow, *locks;
         bool foundPath = false;
 
+        
+
+        cudaMallocManaged(&locks, N * sizeof(int));
         cudaMallocManaged(&frontier, N * sizeof(bool));
         cudaMallocManaged(&newFrontier, N * sizeof(bool));
         cudaMallocManaged(&visited, N * sizeof(int));
@@ -198,6 +210,7 @@ int main(int argc, char* argv[]) {
             visited[i] = 0;
             parent[i] = -1;
             flow[i] = 0;
+            locks[i] = 0;
         }
         frontier[0] = true; // Assume source is node 0
         visited[0] = true;
@@ -207,13 +220,13 @@ int main(int argc, char* argv[]) {
         int frontierSize = 1;
 
         while (frontierSize > 0 && !visited[N - 1]) { // Assume sink is node N-1
-            int blockSize = 256;
-            int numBlocks = (N + blockSize - 1) / blockSize;
+            int blockSize = 512;
+            int numBlocks = ceil(N * 1.0 / blockSize);
 
             if (isTopDown) {
-                topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
+                topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             } else {
-                bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
+                bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
 
             cudaDeviceSynchronize();
@@ -253,6 +266,7 @@ int main(int argc, char* argv[]) {
         cudaFree(visited);
         cudaFree(parent);
         cudaFree(flow);
+        cudaFree(locks);
     }
 
     cudaEventRecord(stop);
