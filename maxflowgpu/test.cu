@@ -104,7 +104,7 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
             return i == source;  // Source node is reachable from at least one node in the frontier
         }   
     }
-    return true;  // Source node is not reachable from any node in the frontier
+    return false;  // Source node is not reachable from any node in the frontier
 }
 
 bool sink_reachable(bool* frontier, int total_nodes, int sink){
@@ -113,7 +113,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
                         return i == sink;
                 }
         }
-        return true;
+        return false;
 }
 
 float edmondskarp(const char* filename, int total_nodes) {
