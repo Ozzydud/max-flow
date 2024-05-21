@@ -98,12 +98,11 @@ __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int tota
 }
 
 bool source_reachable(bool* frontier, int total_nodes, int source) {
-    for (int i = 0; i <= total_nodes - 1; ++i) {
-        if (frontier[i]) {
-            return i == source;
-        }
-    }
-    return true;
+    return frontier[source];
+}
+
+bool sink_reachable(bool* frontier, int total_nodes, int sink) {
+    return frontier[sink];
 }
 
 float edmondskarp(const char* filename, int total_nodes) {
@@ -189,9 +188,9 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
             parent[i] = -1;
-            flow[i] = INF;
+            flow[i] = (i == source) ? INF : 0;
             locks[i] = 0;
-            frontier[i] = (i == sink);
+            frontier[i] = (use_bottom_up && i == sink) || (!use_bottom_up && i == source);
             visited[i] = false;
             do_change_capacity[i] = false;
         }
@@ -209,7 +208,7 @@ float edmondskarp(const char* filename, int total_nodes) {
 
         int old_work = 0;
         int new_work = 0;
-        while (!source_reachable(frontier, total_nodes, source)) {
+        while ((use_bottom_up && !sink_reachable(frontier, total_nodes, sink)) || (!use_bottom_up && !source_reachable(frontier, total_nodes, source))) {
             cudaEventRecord(startEvent, 0);
             if (use_bottom_up) {
                 cudaBFS_BottomUp<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
@@ -220,9 +219,9 @@ float edmondskarp(const char* filename, int total_nodes) {
             cudaEventRecord(stopEvent, 0);
             cudaEventSynchronize(stopEvent);
 
-            float bfsmili = 0.0f;
-            cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
-            avgBFSTime += bfsmili;
+            float miliseconds1 = 0;
+            cudaEventElapsedTime(&miliseconds1, startEvent, stopEvent);
+            avgBFSTime += miliseconds1;
 
             cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
             cudaMemcpy(visited, d_visited, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
@@ -246,14 +245,11 @@ float edmondskarp(const char* filename, int total_nodes) {
             break;
         }
 
-        
-
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
 
         path_flow = flow[source];
         max_flow += path_flow;
-        cout << flow[2] << endl;
 
         for (int i = source; i != sink; i = parent[i]) {
             do_change_capacity[i] = true;
@@ -272,7 +268,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         avgAUGTime += augmili;
 
         counter++;
-    } while (found_augmenting_path);
+    } while (counter != 3);
 
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
@@ -321,7 +317,7 @@ int main() {
     for (int i = 0; i < 10; i++) {
         ms += edmondskarp("cage3.mtx", 5);
     }
-    /*
+
     float ms2 = 0;
     cout << "cage9.mtx" << endl; 
     test = edmondskarp("data/cage9.mtx", 3534);
@@ -347,6 +343,6 @@ int main() {
     cout << "cage9.mtx end with an avg speed of " << ms2 / 10 << endl; 
     cout << "cage10.mtx end with an avg speed of " << ms3 / 10 << endl; 
     cout << "cage11.mtx end with an avg speed of " << ms4 / 10 << endl; 
-*/
+
     return 0;
 }
