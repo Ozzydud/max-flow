@@ -286,7 +286,7 @@ float edmondskarp(const char* filename, int total_nodes) {
             max_flow += path_flow;
             cout << max_flow << endl;
 
-        for (int i = source; i != sink; i = parent[i]) {
+        for (int i = sink; i != source; i = parent[i]) {
             do_change_capacity[i] = true;
         }
 
