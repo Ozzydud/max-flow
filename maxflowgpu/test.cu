@@ -189,12 +189,13 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
             parent[i] = -1;
-            flow[i] = (i == source) ? INF : 0;
+            flow[i] = INF;
             locks[i] = 0;
             frontier[i] = (i == sink);
             visited[i] = false;
             do_change_capacity[i] = false;
         }
+        flow[source] = 0;
 
         cudaMemcpy(d_parent, parent, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
         cudaMemcpy(d_flow, flow, total_nodes * sizeof(int), cudaMemcpyHostToDevice);
