@@ -188,7 +188,13 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
             parent[i] = -1;
-            flow[i] = (i == source) ? INF : 0;
+            if(use_bottom_up && i == sink){
+                flow[i] = 0;
+            }else if(!use_bottom_up && i == source){
+                flow[i] = 0;
+            }else{
+                flow[i] = INF;
+            }
             locks[i] = 0;
             frontier[i] = (use_bottom_up && i == sink) || (!use_bottom_up && i == source);
             visited[i] = false;
