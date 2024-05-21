@@ -10,15 +10,6 @@
 
 using namespace std;
 
-// CUDA error checking
-#define cudaCheckError() { \
-    cudaError_t e = cudaGetLastError(); \
-    if (e != cudaSuccess) { \
-        printf("CUDA error: %s\n", cudaGetErrorString(e)); \
-        exit(1); \
-    } \
-}
-
 void readInput(const char* filename, int total_nodes, int* residual) {
     ifstream file;
     file.open(filename);
@@ -114,7 +105,7 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
     int frontierSize = 1;
 
     while (frontierSize > 0 && !visited[sink]) {
-        int blockSize = 256;
+        int blockSize = 512;
         int numBlocks = (n + blockSize - 1) / blockSize;
 
         if (isTopDown) {
@@ -122,8 +113,6 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
         } else {
             bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow, locks);
         }
-
-        cudaCheckError();
 
         // Count new frontier size and decide if we should switch approach
         frontierSize = 0;
@@ -223,9 +212,6 @@ int main(int argc, char* argv[]) {
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
             cout << "test1" << endl;
-
-            cudaDeviceSynchronize();
-            cudaCheckError();
 
             // Count new frontier size and decide if we should switch approach
             frontierSize = 0;
