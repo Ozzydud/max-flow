@@ -229,8 +229,10 @@ float edmondskarp(const char* filename, int total_nodes) {
             did_use_BU = use_bottom_up;
             cudaEventRecord(startEvent, 0);
             if (use_bottom_up) {
+                cout << "test1" << endl;
                 cudaBFS_BottomUp<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
             } else {
+                cout << "test2" << endl;
                 cudaBFS_TopDown<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks, sink);
             }
             bfsCounter++;
