@@ -10,6 +10,7 @@
 
 using namespace std;
 
+
 void readInput(const char* filename, int total_nodes, int* residual) {
     ifstream file;
     file.open(filename);
@@ -212,6 +213,8 @@ int main(int argc, char* argv[]) {
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
             cout << "test1" << endl;
+
+            cudaDeviceSynchronize();
 
             // Count new frontier size and decide if we should switch approach
             frontierSize = 0;
