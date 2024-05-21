@@ -265,10 +265,10 @@ float edmondskarp(const char* filename, int total_nodes) {
         }
         if (did_use_BU) {
             cout << "sink" << endl;
-            found_augmenting_path = frontier[sink];
+            found_augmenting_path = sink_reachable(frontier, total_nodes, sink);
         } else {
             cout << "source" << endl;
-            found_augmenting_path = frontier[source];
+            found_augmenting_path = source_reachable(frontier, total_nodes, source);
         }
 
     if (!found_augmenting_path) {
