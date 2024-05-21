@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-#define N 6 // Number of nodes (example size)
+#define N 5 // Number of nodes (example size)
 
 using namespace std;
 
