@@ -56,14 +56,12 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
         for (int v = 0; v < n; ++v) {
             if (adjMatrix[u * n + v] > 0 && !visited[v]) {
                 int edgeIndex = u * n + v;
-                while (atomicCAS(&locks[edgeIndex], 0, 1) != 0);
                 if (!visited[v]) {
                     newFrontier[v] = true;
                     visited[v] = true;
                     parent[v] = u;
                     flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
                 }
-                atomicExch(&locks[edgeIndex], 0);
             }
         }
     }
@@ -75,14 +73,12 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
         for (int u = 0; u < n; ++u) {
             if (adjMatrix[u * n + v] > 0 && frontier[u]) {
                 int edgeIndex = u * n + v;
-                while (atomicCAS(&locks[edgeIndex], 0, 1) != 0);
                 if (!visited[v]) {
                     newFrontier[v] = true;
                     visited[v] = true;
                     parent[v] = u;
                     flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
                 }
-                atomicExch(&locks[edgeIndex], 0);
                 break;
             }
         }
