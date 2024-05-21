@@ -214,8 +214,6 @@ int main(int argc, char* argv[]) {
             }
             cout << "test1" << endl;
 
-            cudaDeviceSynchronize();
-
             // Count new frontier size and decide if we should switch approach
             frontierSize = 0;
             for (int i = 0; i < N; ++i) {
