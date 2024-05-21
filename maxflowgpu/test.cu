@@ -341,8 +341,9 @@ float edmondskarp(const char* filename, int total_nodes) {
     cout << "Average BFS Time: " << avgBFSTime << " ms" << endl;
     cout << "Average Augmentation Time: " << avgAUGTime << " ms" << endl;
     cout << "Total Init Time: " << totalInitTime << " ms" << endl;
+    cout << max_flow << endl;
 
-    return max_flow / 1000.0;
+    return milliseconds;
 }
 
 int main() {
