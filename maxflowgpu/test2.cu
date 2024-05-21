@@ -232,6 +232,7 @@ int main(int argc, char* argv[]) {
 
         int pathFlow = flow[N - 1];
         maxFlow += pathFlow;
+        cout << maxFlow << endl;
 
         int v = N - 1;
         while (parent[v] != -1) {
