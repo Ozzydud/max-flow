@@ -51,9 +51,9 @@ void readInput(const char* filename, int total_nodes, int* residual) {
     file.close();
 }
 
-__global__ void cudaBFS_TopDown(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int source, int* locks) {
+__global__ void cudaBFS_TopDown(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int source, int* locks, int sink) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (Idx < vertices && frontier[Idx]) {
+    if (!frontier[sink] && Idx < vertices && frontier[Idx]) {
         frontier[Idx] = false;
         visited[Idx] = true;
 
@@ -73,9 +73,12 @@ __global__ void cudaBFS_TopDown(int *r_capacity, int *parent, int *flow, bool *f
 
 __global__ void cudaBFS_BottomUp(int *r_capacity, int *parent, int *flow, bool *frontier, bool* visited, int vertices, int source, int* locks) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (Idx < vertices && !visited[Idx]) {
+
+    if (!frontier[source] && Idx < vertices && frontier[Idx]) {
+        frontier[Idx] = false;
+        visited[Idx] = true;
         for (int i = 0; i < vertices; i++) {
-            if (frontier[i] && r_capacity[i * vertices + Idx] > 0) {
+            if (!visited[i] && !frontier[i] && r_capacity[i * vertices + Idx] > 0) {
                 if (atomicCAS(locks + Idx, 0, 1) == 1 || frontier[Idx]) {
                     continue;
                 }
@@ -83,7 +86,6 @@ __global__ void cudaBFS_BottomUp(int *r_capacity, int *parent, int *flow, bool *
                 locks[Idx] = 0;
                 parent[Idx] = i;
                 flow[Idx] = min(flow[i], r_capacity[i * vertices + Idx]);
-                visited[Idx] = true;
             }
         }
     }
@@ -104,7 +106,7 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
             return i == source;  // Source node is reachable from at least one node in the frontier
         }   
     }
-    return false;  // Source node is not reachable from any node in the frontier
+    return true;  // Source node is not reachable from any node in the frontier
 }
 
 bool sink_reachable(bool* frontier, int total_nodes, int sink){
@@ -113,7 +115,7 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
                         return i == sink;
                 }
         }
-        return false;
+        return true;
 }
 
 float edmondskarp(const char* filename, int total_nodes) {
@@ -223,7 +225,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         while ((!use_bottom_up && !sink_reachable(frontier, total_nodes, sink)) || (use_bottom_up && !source_reachable(frontier, total_nodes, source))) {
             cudaEventRecord(startEvent, 0);
             if (use_bottom_up) {
-                cudaBFS_BottomUp<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
+                cudaBFS_BottomUp<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks, sink);
             } else {
                 cudaBFS_TopDown<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
             }
