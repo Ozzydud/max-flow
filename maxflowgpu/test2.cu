@@ -60,9 +60,9 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 
 __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow, int* locks) {
     int u = blockIdx.x * blockDim.x + threadIdx.x;
-    if (u < n) {
+    if (u < n && frontier[u]) {
         for (int v = 0; v < n; ++v) {
-            if(atomicCAS(locks + u, 0, 1) == 1 && frontier[u]){
+            if(atomicCAS(locks + u, 0, 1) == 1){
             continue;
         }
             if (adjMatrix[u * n + v] > 0 && !visited[v]) {
@@ -77,9 +77,9 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
 
 __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow, int* locks) {
     int v = blockIdx.x * blockDim.x + threadIdx.x;
-    if (v < n) {
+    if (v < n && !visited[v]) {
         for (int u = 0; u < n; ++u) {
-            if(atomicCAS(locks + v, 0, 1) == 1 && !visited[v]){
+            if(atomicCAS(locks + v, 0, 1) == 1){
             continue;
         }
             if (adjMatrix[u * n + v] > 0 && frontier[u]) {
