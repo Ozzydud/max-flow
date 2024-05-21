@@ -5,11 +5,11 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <climits>
 
 #define N 3534 // Number of nodes (example size)
 
 using namespace std;
-
 
 void readInput(const char* filename, int total_nodes, int* residual) {
     ifstream file;
@@ -89,80 +89,8 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
     }
 }
 
-
 void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
-    bool *frontier, *newFrontier;
-    int *visited, *parent, *flow, *locks;
-
-    cudaMallocManaged(&locks, n * sizeof(int));
-    cudaMallocManaged(&frontier, n * sizeof(bool));
-    cudaMallocManaged(&newFrontier, n * sizeof(bool));
-    cudaMallocManaged(&visited, n * sizeof(int));
-    cudaMallocManaged(&parent, n * sizeof(int));
-    cudaMallocManaged(&flow, n * sizeof(int));
-
-    for (int i = 0; i < n; ++i) {
-        frontier[i] = false;
-        newFrontier[i] = false;
-        visited[i] = 0;
-        parent[i] = -1;
-        flow[i] = 0;
-        locks[i] = 0;
-    }
-    frontier[source] = true;
-    visited[source] = true;
-    flow[source] = INT_MAX; // Set initial flow to maximum value
-
-    bool isTopDown = true;
-    int frontierSize = 1;
-
-    while (frontierSize > 0 && !visited[sink]) {
-        int blockSize = 512;
-        int numBlocks = (n + blockSize - 1) / blockSize;
-
-        if (isTopDown) {
-            topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow, locks);
-        } else {
-            bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow, locks);
-        }
-
-        // Count new frontier size and decide if we should switch approach
-        frontierSize = 0;
-        for (int i = 0; i < n; ++i) {
-            frontier[i] = newFrontier[i];
-            newFrontier[i] = false;
-            if (frontier[i]) {
-                frontierSize++;
-            }
-        }
-
-        if (frontierSize > n / 10) { // Example threshold for switching
-            isTopDown = !isTopDown;
-        }
-    }
-
-    // Calculate flow along augmenting path and update residual capacities
-    int pathFlow = flow[sink];
-    cout << "test" << endl;
-    if (pathFlow == 0) return;
-    cout << "test1" << endl;
-    maxFlow += pathFlow;
-
-
-    int v = sink;
-    while (parent[v] != -1) {
-        int u = parent[v];
-        adjMatrix[u * n + v] -= pathFlow;
-        adjMatrix[v * n + u] += pathFlow; // Update backward edge
-        v = u;
-    }
-
-    cudaFree(frontier);
-    cudaFree(newFrontier);
-    cudaFree(visited);
-    cudaFree(parent);
-    cudaFree(flow);
-    cudaFree(locks);
+    // This function is unused in the current implementation, so let's remove it.
 }
 
 int main(int argc, char* argv[]) {
@@ -174,7 +102,10 @@ int main(int argc, char* argv[]) {
     const char* filename = argv[1];
 
     int *adjMatrix;
-    cudaMallocManaged(&adjMatrix, N * N * sizeof(int));
+    if (cudaMallocManaged(&adjMatrix, N * N * sizeof(int)) != cudaSuccess) {
+        cerr << "Memory allocation failed for adjMatrix" << endl;
+        return 1;
+    }
     memset(adjMatrix, 0, N * N * sizeof(int)); // Initialize the adjacency matrix with zeros
 
     readInput(filename, N, adjMatrix);
@@ -186,20 +117,22 @@ int main(int argc, char* argv[]) {
     cudaEventRecord(start);
 
     int maxFlow = 0;
+
+    // Allocate memory for BFS-related arrays once
+    bool *frontier, *newFrontier;
+    int *visited, *parent, *flow, *locks;
+    if (cudaMallocManaged(&locks, N * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&frontier, N * sizeof(bool)) != cudaSuccess ||
+        cudaMallocManaged(&newFrontier, N * sizeof(bool)) != cudaSuccess ||
+        cudaMallocManaged(&visited, N * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&parent, N * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&flow, N * sizeof(int)) != cudaSuccess) {
+        cerr << "Memory allocation failed" << endl;
+        return 1;
+    }
+
     while (true) {
-        bool *frontier, *newFrontier;
-        int *visited, *parent, *flow, *locks;
-        bool foundPath = false;
-
-        
-
-        cudaMallocManaged(&locks, N * sizeof(int));
-        cudaMallocManaged(&frontier, N * sizeof(bool));
-        cudaMallocManaged(&newFrontier, N * sizeof(bool));
-        cudaMallocManaged(&visited, N * sizeof(int));
-        cudaMallocManaged(&parent, N * sizeof(int));
-        cudaMallocManaged(&flow, N * sizeof(int));
-
+        // Reset state for the new BFS iteration
         for (int i = 0; i < N; ++i) {
             frontier[i] = false;
             newFrontier[i] = false;
@@ -217,16 +150,20 @@ int main(int argc, char* argv[]) {
 
         while (frontierSize > 0 && !visited[N - 1]) { // Assume sink is node N-1
             int blockSize = 512;
-            int numBlocks = ceil(N * 1.0 / blockSize);
+            int numBlocks = (N + blockSize - 1) / blockSize;
 
             if (isTopDown) {
                 topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             } else {
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
-            cout << "test1" << endl;
 
             cudaDeviceSynchronize();
+            cudaError_t err = cudaGetLastError();
+            if (err != cudaSuccess) {
+                cerr << "CUDA error: " << cudaGetErrorString(err) << endl;
+                return 1;
+            }
 
             // Count new frontier size and decide if we should switch approach
             frontierSize = 0;
@@ -241,13 +178,14 @@ int main(int argc, char* argv[]) {
             if (frontierSize > N / 10) { // Example threshold for switching
                 isTopDown = !isTopDown;
             }
+
+            cout << "Frontier size: " << frontierSize << " Visited sink: " << visited[N - 1] << endl;
         }
-        cout << "test2" << endl;
+
         if (!visited[N - 1]) break; // No augmenting path found
-        cout << "test3" << endl;
+
         int pathFlow = flow[N - 1];
         maxFlow += pathFlow;
-        cout << maxFlow << endl;
 
         int v = N - 1;
         while (parent[v] != -1) {
@@ -256,14 +194,15 @@ int main(int argc, char* argv[]) {
             adjMatrix[v * N + u] += pathFlow; // Update backward edge
             v = u;
         }
-
-        cudaFree(frontier);
-        cudaFree(newFrontier);
-        cudaFree(visited);
-        cudaFree(parent);
-        cudaFree(flow);
-        cudaFree(locks);
     }
+
+    // Free allocated memory
+    cudaFree(frontier);
+    cudaFree(newFrontier);
+    cudaFree(visited);
+    cudaFree(parent);
+    cudaFree(flow);
+    cudaFree(locks);
 
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
