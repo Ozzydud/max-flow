@@ -221,6 +221,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         int new_work = 0;
         while ((use_bottom_up && !sink_reachable(frontier, total_nodes, sink)) || (!use_bottom_up && !source_reachable(frontier, total_nodes, source))) {
             cudaEventRecord(startEvent, 0);
+            cout << "test0" << endl;
             if (use_bottom_up) {
                 cout << "test1" << endl;
                 cudaBFS_BottomUp<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
