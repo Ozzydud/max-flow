@@ -254,19 +254,17 @@ float edmondskarp(const char* filename, int total_nodes) {
             }
             old_work = new_work;
         }
-        if(did_use_BU){
-            found_augmenting_path = frontier[source];
-            cout << found_augmenting_path << endl;
-        }else{
-            found_augmenting_path = frontier[sink];
-            cout << "hehe12" << endl;
+        if (did_use_BU) {
+            found_augmenting_path = sink_reachable(frontier, total_nodes, sink);
+        } else {
+            found_augmenting_path = source_reachable(frontier, total_nodes, source);
         }
-        
 
-        if (!found_augmenting_path) {
-            cout << "hehe" << endl;
-            break;
-        }
+    if (!found_augmenting_path) {
+        cout << "No augmenting path found. Terminating." << endl;
+        break;
+    }
+
 
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
