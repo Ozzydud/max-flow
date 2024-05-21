@@ -205,6 +205,7 @@ float edmondskarp(const char* filename, int total_nodes) {
     totalInitTime += initmili;
 
     bool use_bottom_up = false;
+    const float switch_threshold = 0.2;  // 20% threshold
     do {
         cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
@@ -227,140 +228,121 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaEventElapsedTime(&partinitmili, startEvent3_1, stopEvent3_1);
         totalInitTime += partinitmili;
 
-        int old_work = 0;
-        int new_work = 0;
         bool did_use_BU = false;
-        cout << !use_bottom_up << !sink_reachable(frontier, total_nodes, sink) << use_bottom_up << !source_reachable(frontier, total_nodes, source) << endl;
-        while ((!use_bottom_up && !sink_reachable(frontier, total_nodes, sink)) || (use_bottom_up && !source_reachable(frontier, total_nodes, source))) {
+        bool did_not_use_BU = false;
+        do {
             cudaEventRecord(startEvent, 0);
+
             if (use_bottom_up) {
                 did_use_BU = true;
-                cout << "test1" << endl;
                 cudaBFS_BottomUp<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks);
             } else {
-                did_use_BU = false;
-                cout << "test2" << endl;
+                did_not_use_BU = true;
                 cudaBFS_TopDown<<<grid_size, block_size>>>(d_r_capacity, d_parent, d_flow, d_frontier, d_visited, total_nodes, source, d_locks, sink);
             }
+
             bfsCounter++;
             cudaEventRecord(stopEvent, 0);
             cudaEventSynchronize(stopEvent);
-            cout << "test" << endl;
+
             float miliseconds1 = 0;
             cudaEventElapsedTime(&miliseconds1, startEvent, stopEvent);
             avgBFSTime += miliseconds1;
 
             cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
             cudaMemcpy(visited, d_visited, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
-            new_work = 0;
+
+            int frontier_size = 0;
             for (int i = 0; i < total_nodes; i++) {
-                if (visited[i]) {
-                    new_work++;
+                if (frontier[i]) {
+                    frontier_size++;
                 }
             }
 
-            if (new_work > 2 * old_work) {
-                use_bottom_up = !use_bottom_up;
+            // Switch logic based on frontier size
+            if (frontier_size > switch_threshold * total_nodes) {
+                use_bottom_up = true;
+            } else {
+                use_bottom_up = false;
             }
-            old_work = new_work;
-        }
-        if (did_use_BU) {
-            cout << "sink" << endl;
-            found_augmenting_path = source_reachable(frontier, total_nodes, source);
-        } else {
-            cout << "source" << endl;
-            found_augmenting_path = sink_reachable(frontier, total_nodes, sink);
-        }
 
-    if (!found_augmenting_path) {
-        cout << "No augmenting path found. Terminating." << endl;
-        break;
-    }
+        } while ((!use_bottom_up && !sink_reachable(frontier, total_nodes, sink)) || (use_bottom_up && !source_reachable(frontier, total_nodes, source)));
 
-
-        cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
-        if(did_use_BU){
-            cout << "testing" << endl;
-            path_flow = flow[sink];
+        cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
+
+        found_augmenting_path = false;
+
+        for (int v = 0; v < total_nodes; v++) {
+            if ((use_bottom_up && visited[v]) || (!use_bottom_up && frontier[v])) {
+                if ((use_bottom_up && v == source) || (!use_bottom_up && v == sink)) {
+                    found_augmenting_path = true;
+                    path_flow = flow[v];
+                    int u = parent[v];
+                    while (u != -1) {
+                        do_change_capacity[v] = true;
+                        v = u;
+                        u = parent[v];
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (found_augmenting_path) {
+            augCounter++;
             max_flow += path_flow;
-            cout << max_flow << endl;
+            cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+            cudaEventRecord(startEvent2);
+            if(did_not_use_BU){
+                cudaAugment_pathTD<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+            } else {
+                cudaAugment_pathBU<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+            }
+            cudaEventRecord(stopEvent2);
+            cudaEventSynchronize(stopEvent2);
 
-        for (int i = sink; i != source; i = parent[i]) {
-            do_change_capacity[i] = true;
+            float milliseconds2 = 0;
+            cudaEventElapsedTime(&milliseconds2, startEvent2, stopEvent2);
+            avgAUGTime += milliseconds2;
         }
-
-        cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
-        cudaAugment_pathBU<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
-        }else{
-            cout << "testing2" << endl;
-            path_flow = flow[sink];
-           
-        max_flow += path_flow;
-        cout << max_flow << endl;
-
-        for (int i = sink; i != source; i = parent[i]) {
-            do_change_capacity[i] = true;
-        }
-
-
-         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
-         cudaAugment_pathBU<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
-        }
-
-        
-        cout << "test3" << endl;
-        cudaEventRecord(startEvent2, 0);
-        augCounter++;
-        cout << "test4" << endl;
-        cudaEventRecord(stopEvent2, 0);
-        cudaEventSynchronize(stopEvent2);
-
-        float augmili = 0.0f;
-        cudaEventElapsedTime(&augmili, startEvent2, stopEvent2);
-        avgAUGTime += augmili;
 
         counter++;
-    } while (counter != 3);
+    } while (found_augmenting_path);
 
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
-    cudaEventElapsedTime(&milliseconds, start, stop);
+    cudaMemcpy(residual, d_r_capacity, total_nodes * total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
 
-    cout << "Time for BFS and augmenting path: " << milliseconds << " ms\n";
-    cout << "Average BFS time is: " << avgBFSTime / bfsCounter << "ms\n";
-    cout << "Total time BFS is: " << avgBFSTime << "ms\n";
-    cout << "Total AUG time is " << avgAUGTime << "ms\n";
-    cout << "Average AUG time is: " << avgAUGTime / augCounter << "ms\n";
-    cout << "Total init time is: " << totalInitTime << "ms\n";
-    cout << "Maximum Flow: " << max_flow << endl;
-
-    delete[] residual;
-    delete[] parent;
-    delete[] flow;
-    delete[] locks;
-    delete[] frontier;
-    delete[] visited;
-    delete[] do_change_capacity;
     cudaFree(d_r_capacity);
     cudaFree(d_parent);
     cudaFree(d_flow);
     cudaFree(d_frontier);
     cudaFree(d_visited);
-    cudaFree(d_locks);
     cudaFree(d_do_change_capacity);
+    cudaFree(d_locks);
+
+    delete[] parent;
+    delete[] flow;
+    delete[] frontier;
+    delete[] visited;
+    delete[] do_change_capacity;
+    delete[] locks;
+    delete[] residual;
+
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
-    cudaEventDestroy(stopEvent);
     cudaEventDestroy(startEvent);
-    cudaEventDestroy(stopEvent2);
+    cudaEventDestroy(stopEvent);
     cudaEventDestroy(startEvent2);
-    cudaEventDestroy(stopEvent3);
-    cudaEventDestroy(startEvent3);
-    cudaEventDestroy(startEvent3_1);
-    cudaEventDestroy(stopEvent3_1);
+    cudaEventDestroy(stopEvent2);
 
-    return milliseconds;
+    avgBFSTime /= bfsCounter;
+    avgAUGTime /= augCounter;
+
+    cout << "Average BFS Time: " << avgBFSTime << " ms" << endl;
+    cout << "Average Augmentation Time: " << avgAUGTime << " ms" << endl;
+    cout << "Total Init Time: " << totalInitTime << " ms" << endl;
+
+    return max_flow / 1000.0;
 }
 
 int main() {
