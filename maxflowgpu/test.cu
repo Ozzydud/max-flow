@@ -282,14 +282,21 @@ float edmondskarp(const char* filename, int total_nodes) {
         cout << "testing" << endl;
         if(did_use_BU){
             path_flow = flow[sink];
+            max_flow += path_flow;
+            cout << max_flow << endl;
+
+        for (int i = source; i != sink; i = parent[i]) {
+            do_change_capacity[i] = true;
+        }
         }else{
             path_flow = flow[source];
-        }   
+           
         max_flow += path_flow;
         cout << max_flow << endl;
 
         for (int i = sink; i != source; i = parent[i]) {
             do_change_capacity[i] = true;
+        }
         }
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
