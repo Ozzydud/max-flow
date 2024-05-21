@@ -260,6 +260,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         
 
         if (!found_augmenting_path) {
+            cout << "hehe" << endl;
             break;
         }
 
