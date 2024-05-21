@@ -56,8 +56,8 @@ __global__ void bfs(int *residual, int *parent, int *visited, int total_nodes, i
 __global__ void updateResidual(int *residual, int *parent, int total_nodes, int source, int sink, int path_flow);
 
 int main() {
-    const char* filename = "input.txt"; // Path to your input file
-    int total_nodes = 6; // Number of nodes in your graph, set appropriately
+    const char* filename = "cage3.mtx"; // Path to your input file
+    int total_nodes = 5; // Number of nodes in your graph, set appropriately
     int source = 0, sink = total_nodes - 1;
 
     int *residual = (int *)malloc(total_nodes * total_nodes * sizeof(int));
