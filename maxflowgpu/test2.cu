@@ -1,110 +1,255 @@
-__global__ void bfs(int *residual, int *parent, int *visited, int total_nodes, int source, int sink) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= total_nodes) return;
-
-    __shared__ int queue[1024];
-    __shared__ int front, rear;
-
-    if (idx == 0) {
-        queue[0] = source;
-        front = 0;
-        rear = 1;
-    }
-    __syncthreads();
-
-    while (front < rear) {
-        int current_node = queue[front++];
-        __syncthreads();
-
-        for (int i = 0; i < total_nodes; ++i) {
-            if (residual[current_node * total_nodes + i] > 0 && !visited[i]) {
-                parent[i] = current_node;
-                visited[i] = 1;
-                if (i == sink) return;
-                queue[rear++] = i;
-            }
-        }
-        __syncthreads();
-    }
-}
-
-
-__global__ void updateResidual(int *residual, int *parent, int total_nodes, int source, int sink, int path_flow) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= total_nodes) return;
-
-    int v = sink;
-    while (v != source) {
-        int u = parent[v];
-        atomicSub(&residual[u * total_nodes + v], path_flow);
-        atomicAdd(&residual[v * total_nodes + u], path_flow);
-        v = u;
-    }
-}
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <cuda_runtime.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#define N 6 // Number of nodes (example size)
 
 using namespace std;
 
-void readInput(const char* filename, int total_nodes, int* residual);
-
-__global__ void bfs(int *residual, int *parent, int *visited, int total_nodes, int source, int sink);
-__global__ void updateResidual(int *residual, int *parent, int total_nodes, int source, int sink, int path_flow);
-
-int main() {
-    const char* filename = "cage3.mtx"; // Path to your input file
-    int total_nodes = ; // Number of nodes in your graph, set appropriately
-    int source = 0, sink = total_nodes - 1;
-
-    int *residual = (int *)malloc(total_nodes * total_nodes * sizeof(int));
-    readInput(filename, total_nodes, residual);
-
-    int *d_residual, *d_parent, *d_visited;
-    cudaMalloc((void**)&d_residual, total_nodes * total_nodes * sizeof(int));
-    cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
-    cudaMalloc((void**)&d_visited, total_nodes * sizeof(int));
-
-    cudaMemcpy(d_residual, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
-
-    int max_flow = 0;
-
-    do {
-        cudaMemset(d_parent, -1, total_nodes * sizeof(int));
-        cudaMemset(d_visited, 0, total_nodes * sizeof(int));
-
-        int num_blocks = (total_nodes + 1023) / 1024;
-        bfs<<<num_blocks, 1024>>>(d_residual, d_parent, d_visited, total_nodes, source, sink);
-        cudaDeviceSynchronize();
-
-        vector<int> parent(total_nodes);
-        cudaMemcpy(parent.data(), d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
-
-        if (parent[sink] == -1) break; // No path found
-
-        int path_flow = INT_MAX;
-        for (int v = sink; v != source; v = parent[v]) {
-            int u = parent[v];
-            path_flow = min(path_flow, residual[u * total_nodes + v]);
-        }
-
-        updateResidual<<<num_blocks, 1024>>>(d_residual, d_parent, total_nodes, source, sink, path_flow);
-        cudaDeviceSynchronize();
-
-        max_flow += path_flow;
-
-    } while (true);
-
-    cout << "Maximum flow: " << max_flow << endl;
-
-    free(residual);
-    cudaFree(d_residual);
-    cudaFree(d_parent);
-    cudaFree(d_visited);
-
-    return 0;
+// CUDA error checking
+#define cudaCheckError() { \
+    cudaError_t e = cudaGetLastError(); \
+    if (e != cudaSuccess) { \
+        printf("CUDA error: %s\n", cudaGetErrorString(e)); \
+        exit(1); \
+    } \
 }
 
+void readInput(const char* filename, int total_nodes, int* residual) {
+    ifstream file;
+    file.open(filename);
+
+    if (!file) {
+        cout << "Error reading file!";
+        exit(1);
+    }
+
+    string line;
+    int source, destination;
+    int numberOfEdges = 0;
+    float capacity;
+
+    while (getline(file, line)) {
+        if (line.empty()) continue;
+
+        stringstream linestream(line);
+        if (!(linestream >> source >> destination >> capacity)) {
+            cerr << "Error parsing line: " << line << endl;
+            continue;
+        }
+
+        source--;
+        destination--;
+        int scaledCapacity = static_cast<int>(capacity * 1000);
+        if (!residual) {
+            cerr << "Memory allocation failed for residual matrix.";
+            exit(EXIT_FAILURE);
+        }
+
+        numberOfEdges++;
+        residual[source * total_nodes + destination] = scaledCapacity;
+    }
+
+    cout << "Number of edges in graph is: " << numberOfEdges << endl;
+    file.close();
+}
+
+__global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow) {
+    int u = blockIdx.x * blockDim.x + threadIdx.x;
+    if (u < n && frontier[u]) {
+        for (int v = 0; v < n; ++v) {
+            if (adjMatrix[u * n + v] > 0 && !visited[v]) {
+                newFrontier[v] = true;
+                visited[v] = true;
+                parent[v] = u;
+                flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
+            }
+        }
+    }
+}
+
+__global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow) {
+    int v = blockIdx.x * blockDim.x + threadIdx.x;
+    if (v < n && !visited[v]) {
+        for (int u = 0; u < n; ++u) {
+            if (adjMatrix[u * n + v] > 0 && frontier[u]) {
+                newFrontier[v] = true;
+                visited[v] = true;
+                parent[v] = u;
+                flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
+                break;
+            }
+        }
+    }
+}
+
+void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
+    bool *frontier, *newFrontier;
+    int *visited, *parent, *flow;
+
+    cudaMallocManaged(&frontier, n * sizeof(bool));
+    cudaMallocManaged(&newFrontier, n * sizeof(bool));
+    cudaMallocManaged(&visited, n * sizeof(int));
+    cudaMallocManaged(&parent, n * sizeof(int));
+    cudaMallocManaged(&flow, n * sizeof(int));
+
+    for (int i = 0; i < n; ++i) {
+        frontier[i] = false;
+        newFrontier[i] = false;
+        visited[i] = 0;
+        parent[i] = -1;
+        flow[i] = 0;
+    }
+    frontier[source] = true;
+    visited[source] = true;
+    flow[source] = INT_MAX; // Set initial flow to maximum value
+
+    bool isTopDown = true;
+    int frontierSize = 1;
+
+    while (frontierSize > 0 && !visited[sink]) {
+        int blockSize = 256;
+        int numBlocks = (n + blockSize - 1) / blockSize;
+
+        if (isTopDown) {
+            topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow);
+        } else {
+            bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow);
+        }
+
+        cudaDeviceSynchronize();
+        cudaCheckError();
+
+        // Count new frontier size and decide if we should switch approach
+        frontierSize = 0;
+        for (int i = 0; i < n; ++i) {
+            frontier[i] = newFrontier[i];
+            newFrontier[i] = false;
+            if (frontier[i]) {
+                frontierSize++;
+            }
+        }
+
+        if (frontierSize > n / 10) { // Example threshold for switching
+            isTopDown = !isTopDown;
+        }
+    }
+
+    // Calculate flow along augmenting path and update residual capacities
+    int pathFlow = flow[sink];
+    if (pathFlow == 0) return;
+
+    maxFlow += pathFlow;
+
+    int v = sink;
+    while (parent[v] != -1) {
+        int u = parent[v];
+        adjMatrix[u * n + v] -= pathFlow;
+        adjMatrix[v * n + u] += pathFlow; // Update backward edge
+        v = u;
+    }
+
+    cudaFree(frontier);
+    cudaFree(newFrontier);
+    cudaFree(visited);
+    cudaFree(parent);
+    cudaFree(flow);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        cout << "Usage: " << argv[0] << " <input_file>" << endl;
+        return 1;
+    }
+
+    const char* filename = argv[1];
+
+    int *adjMatrix;
+    cudaMallocManaged(&adjMatrix, N * N * sizeof(int));
+    memset(adjMatrix, 0, N * N * sizeof(int)); // Initialize the adjacency matrix with zeros
+
+    readInput(filename, N, adjMatrix);
+
+    int maxFlow = 0;
+    while (true) {
+        bool *frontier, *newFrontier;
+        int *visited, *parent, *flow;
+        bool foundPath = false;
+
+        cudaMallocManaged(&frontier, N * sizeof(bool));
+        cudaMallocManaged(&newFrontier, N * sizeof(bool));
+        cudaMallocManaged(&visited, N * sizeof(int));
+        cudaMallocManaged(&parent, N * sizeof(int));
+        cudaMallocManaged(&flow, N * sizeof(int));
+
+        for (int i = 0; i < N; ++i) {
+            frontier[i] = false;
+            newFrontier[i] = false;
+            visited[i] = 0;
+            parent[i] = -1;
+            flow[i] = 0;
+        }
+        frontier[0] = true; // Assume source is node 0
+        visited[0] = true;
+        flow[0] = INT_MAX; // Set initial flow to maximum value
+
+        bool isTopDown = true;
+        int frontierSize = 1;
+
+        while (frontierSize > 0 && !visited[N - 1]) { // Assume sink is node N-1
+            int blockSize = 256;
+            int numBlocks = (N + blockSize - 1) / blockSize;
+
+            if (isTopDown) {
+                topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
+            } else {
+                bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
+            }
+
+            cudaDeviceSynchronize();
+            cudaCheckError();
+
+            // Count new frontier size and decide if we should switch approach
+            frontierSize = 0;
+            for (int i = 0; i < N; ++i) {
+                frontier[i] = newFrontier[i];
+                newFrontier[i] = false;
+                if (frontier[i]) {
+                    frontierSize++;
+                }
+            }
+
+            if (frontierSize > N / 10) { // Example threshold for switching
+                isTopDown = !isTopDown;
+            }
+        }
+
+        if (!visited[N - 1]) break; // No augmenting path found
+
+        int pathFlow = flow[N - 1];
+        maxFlow += pathFlow;
+
+        int v = N - 1;
+        while (parent[v] != -1) {
+            int u = parent[v];
+            adjMatrix[u * N + v] -= pathFlow;
+            adjMatrix[v * N + u] += pathFlow; // Update backward edge
+            v = u;
+        }
+
+        cudaFree(frontier);
+        cudaFree(newFrontier);
+        cudaFree(visited);
+        cudaFree(parent);
+        cudaFree(flow);
+    }
+
+    cout << "Maximum Flow: " << maxFlow << endl;
+
+    cudaFree(adjMatrix);
+    return 0;
+}
