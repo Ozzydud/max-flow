@@ -79,13 +79,13 @@ __global__ void cudaBFS_BottomUp(int *r_capacity, int *parent, int *flow, bool *
         visited[Idx] = true;
         for (int i = 0; i < vertices; i++) {
             if (!visited[i] && !frontier[i] && r_capacity[i * vertices + Idx] > 0) {
-                if (atomicCAS(locks + Idx, 0, 1) == 1 || frontier[Idx]) {
+                if (atomicCAS(locks + Idx, 0, 1) == 1 || frontier[i]) {
                     continue;
                 }
-                frontier[Idx] = true;
-                locks[Idx] = 0;
-                parent[Idx] = i;
-                flow[Idx] = min(flow[i], r_capacity[i * vertices + Idx]);
+                frontier[i] = true;
+                locks[i] = 0;
+                parent[i] = Idx;
+                flow[i] = min(flow[Idx], r_capacity[i * vertices + Idx]);
             }
         }
     }
