@@ -324,7 +324,7 @@ float edmondskarp(const char* filename, int total_nodes) {
 
         counter++;
         }
-    } while (counter != 5);
+    } while (counter != 8);
 
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
