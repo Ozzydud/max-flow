@@ -93,10 +93,10 @@ __global__ void cudaBFS_BottomUp(int *r_capacity, int *parent, int *flow, bool *
 
 __global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, int* r_capacity, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (Idx < total_nodes && do_change_capacity[Idx]) {
-        r_capacity[Idx * total_nodes + parent[Idx]] -= path_flow;
-        r_capacity[parent[Idx] * total_nodes + Idx] += path_flow;
-    }
+    if(Idx < total_nodes && do_change_capacity[Idx]){
+        r_capacity[parent[Idx] * total_nodes + Idx] -= path_flow;
+        r_capacity[Idx * total_nodes + parent[Idx]] += path_flow; 
+    }    
 }
 
 bool source_reachable(bool* frontier, int total_nodes, int source) {
@@ -276,7 +276,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         max_flow += path_flow;
         cout << max_flow << endl;
 
-        for (int i = source; i != sink; i = parent[i]) {
+        for (int i = sink; i != source; i = parent[i]) {
             cout << "test5" << endl;
             do_change_capacity[i] = true;
         }
