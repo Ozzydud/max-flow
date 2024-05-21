@@ -174,6 +174,12 @@ int main(int argc, char* argv[]) {
 
     readInput(filename, N, adjMatrix);
 
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start);
+
     int maxFlow = 0;
     while (true) {
         bool *frontier, *newFrontier;
@@ -232,7 +238,6 @@ int main(int argc, char* argv[]) {
 
         int pathFlow = flow[N - 1];
         maxFlow += pathFlow;
-        cout << maxFlow << endl;
 
         int v = N - 1;
         while (parent[v] != -1) {
@@ -249,8 +254,17 @@ int main(int argc, char* argv[]) {
         cudaFree(flow);
     }
 
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+
     cout << "Maximum Flow: " << maxFlow << endl;
+    cout << "Time elapsed: " << milliseconds << " ms" << endl;
 
     cudaFree(adjMatrix);
+    cudaEventDestroy(start);
+    cudaEventDestroy(stop);
     return 0;
 }
