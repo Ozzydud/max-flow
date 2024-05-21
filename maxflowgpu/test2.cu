@@ -95,14 +95,15 @@ int main(int argc, char* argv[]) {
 
     const char* filename = argv[1];
 
-    int *adjMatrix;
-    if (cudaMallocManaged(&adjMatrix, N * N * sizeof(int)) != cudaSuccess) {
-        cerr << "Memory allocation failed for adjMatrix" << endl;
-        return 1;
+    int *residual;
+    try {
+	residual = new int[N * N]();
+    } catch (const std::bad_alloc& e) {
+	    std::cerr << "Failed to allocate memory for the residual matrix: " << e.what() << std::endl;
+	    return 1;
     }
-    memset(adjMatrix, 0, N * N * sizeof(int)); // Initialize the adjacency matrix with zeros
 
-    readInput(filename, N, adjMatrix);
+    readInput(filename, N, residual);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -115,7 +116,9 @@ int main(int argc, char* argv[]) {
     // Allocate memory for BFS-related arrays once
     bool *frontier, *newFrontier;
     int *visited, *parent, *flow, *locks;
+    int* adjMatrix;
     if (cudaMallocManaged(&locks, N * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&adjMatrix, N * N * sizeof(int)) != cudaSuccess ||
         cudaMallocManaged(&frontier, N * sizeof(bool)) != cudaSuccess ||
         cudaMallocManaged(&newFrontier, N * sizeof(bool)) != cudaSuccess ||
         cudaMallocManaged(&visited, N * sizeof(int)) != cudaSuccess ||
@@ -124,6 +127,8 @@ int main(int argc, char* argv[]) {
         cerr << "Memory allocation failed" << endl;
         return 1;
     }
+    cudaMemcpy(adjMatrix, residual, N * N * sizeof(int), cudaMemcpyHostToDevice);
+
 
     while (true) {
         // Reset state for the new BFS iteration
