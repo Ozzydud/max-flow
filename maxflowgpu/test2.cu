@@ -242,9 +242,9 @@ int main(int argc, char* argv[]) {
                 isTopDown = !isTopDown;
             }
         }
-
+        cout << "test2" << endl;
         if (!visited[N - 1]) break; // No augmenting path found
-
+        cout << "test3" << endl;
         int pathFlow = flow[N - 1];
         maxFlow += pathFlow;
         cout << maxFlow << endl;
