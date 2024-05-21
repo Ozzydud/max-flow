@@ -256,6 +256,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         }
         if(did_use_BU){
             found_augmenting_path = frontier[source];
+            cout << found_augmenting_path << endl;
         }else{
             found_augmenting_path = frontier[sink];
             cout << "hehe12" << endl;
