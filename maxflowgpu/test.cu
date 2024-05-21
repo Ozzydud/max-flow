@@ -294,12 +294,12 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaAugment_pathTD<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
         }else{
             cout << "testing2" << endl;
-            path_flow = flow[source];
+            path_flow = flow[sink];
            
         max_flow += path_flow;
         cout << max_flow << endl;
 
-        for (int i = source; i != sink; i = parent[i]) {
+        for (int i = sink; i != source; i = parent[i]) {
             do_change_capacity[i] = true;
         }
 
