@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-#define N 3534 // Number of nodes (example size)
+#define N 11397 // Number of nodes (example size)
 
 using namespace std;
 
@@ -212,9 +212,7 @@ int main(int argc, char* argv[]) {
 
             if (isTopDown) {
                 topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
-                cout << "TD" << endl;
             } else {
-                cout << "BU" << endl;
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
             }
 
