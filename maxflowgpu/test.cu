@@ -291,7 +291,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         }
 
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
-        cudaAugment_pathBU<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+        cudaAugment_pathTD<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
         }else{
             cout << "testing2" << endl;
             path_flow = flow[sink];
