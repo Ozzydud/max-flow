@@ -328,7 +328,9 @@ float edmondskarp(const char* filename, int total_nodes) {
 int main() {
     float ms = 0;
     cout << "cage3.mtx" << endl; 
+    
     float test = edmondskarp("cage3.mtx", 5);
+    /*
     for (int i = 0; i < 10; i++) {
         ms += edmondskarp("cage3.mtx", 5);
     }
@@ -358,6 +360,6 @@ int main() {
     cout << "cage9.mtx end with an avg speed of " << ms2 / 10 << endl; 
     cout << "cage10.mtx end with an avg speed of " << ms3 / 10 << endl; 
     cout << "cage11.mtx end with an avg speed of " << ms4 / 10 << endl; 
-
+*/
     return 0;
 }
