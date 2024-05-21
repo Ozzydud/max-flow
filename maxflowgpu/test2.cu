@@ -61,10 +61,11 @@ void readInput(const char* filename, int total_nodes, int* residual) {
 __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow, int* locks) {
     int u = blockIdx.x * blockDim.x + threadIdx.x;
     if (u < n) {
-        for (int v = 0; v < n; ++v) {
-            if(atomicCAS(locks + u, 0, 1) == 1 && frontier[u]){
-            continue;
+        if(atomicCAS(locks + u, 0, 1) == 1 && frontier[u]){
+            atomicExch(locks + u, 0); // Release the lock if it was taken
+            return;
         }
+        for (int v = 0; v < n; ++v) {
             if (adjMatrix[u * n + v] > 0 && !visited[v]) {
                 newFrontier[v] = true;
                 visited[v] = true;
@@ -72,16 +73,18 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
                 flow[v] = min(flow[u], adjMatrix[u * n + v]); // Calculate flow along the path
             }
         }
+        atomicExch(locks + u, 0); // Release the lock after BFS is done for this node
     }
 }
 
 __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, int *visited, int n, int *parent, int *flow, int* locks) {
     int v = blockIdx.x * blockDim.x + threadIdx.x;
     if (v < n) {
-        for (int u = 0; u < n; ++u) {
-            if(atomicCAS(locks + v, 0, 1) == 1 && !visited[v]){
-            continue;
+        if(atomicCAS(locks + v, 0, 1) == 1 && !visited[v]){
+            atomicExch(locks + v, 0); // Release the lock if it was taken
+            return;
         }
+        for (int u = 0; u < n; ++u) {
             if (adjMatrix[u * n + v] > 0 && frontier[u]) {
                 newFrontier[v] = true;
                 visited[v] = true;
@@ -90,8 +93,10 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
                 break;
             }
         }
+        atomicExch(locks + v, 0); // Release the lock after BFS is done for this node
     }
 }
+
 
 void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
     bool *frontier, *newFrontier;
