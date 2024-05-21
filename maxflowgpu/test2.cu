@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-#define N 11397 // Number of nodes (example size)
+#define N 5 // Number of nodes (example size)
 
 using namespace std;
 
@@ -231,7 +231,6 @@ int main(int argc, char* argv[]) {
             }
             cout << "test1" << endl;
 
-            cudaDeviceSynchronize();
             cudaCheckError();
 
             // Count new frontier size and decide if we should switch approach
