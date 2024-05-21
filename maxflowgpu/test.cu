@@ -272,7 +272,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         avgAUGTime += augmili;
 
         counter++;
-    } while (found_augmenting_path);
+    } while (counter != 3);
 
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
