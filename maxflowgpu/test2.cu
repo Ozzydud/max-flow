@@ -123,7 +123,6 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
             bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, n, parent, flow, locks);
         }
 
-        cudaDeviceSynchronize();
         cudaCheckError();
 
         // Count new frontier size and decide if we should switch approach
