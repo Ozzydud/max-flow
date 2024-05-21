@@ -143,8 +143,9 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
 
     // Calculate flow along augmenting path and update residual capacities
     int pathFlow = flow[sink];
+    cout << "test" << endl;
     if (pathFlow == 0) return;
-
+    cout << "test1" << endl;
     maxFlow += pathFlow;
 
 
