@@ -212,7 +212,9 @@ int main(int argc, char* argv[]) {
 
             if (isTopDown) {
                 topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
+                cout << "TD" << endl;
             } else {
+                cout << "BU" << endl;
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow);
             }
 
