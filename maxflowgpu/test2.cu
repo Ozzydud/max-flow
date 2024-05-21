@@ -55,7 +55,6 @@ __global__ void topDownBFS(int *adjMatrix, bool *frontier, bool *newFrontier, in
     if (u < n && frontier[u]) {
         for (int v = 0; v < n; ++v) {
             if (adjMatrix[u * n + v] > 0 && !visited[v]) {
-                int edgeIndex = u * n + v;
                 if (!visited[v]) {
                     newFrontier[v] = true;
                     visited[v] = true;
@@ -72,7 +71,6 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
     if (v < n && !visited[v]) {
         for (int u = 0; u < n; ++u) {
             if (adjMatrix[u * n + v] > 0 && frontier[u]) {
-                int edgeIndex = u * n + v;
                 if (!visited[v]) {
                     newFrontier[v] = true;
                     visited[v] = true;
@@ -174,8 +172,6 @@ int main(int argc, char* argv[]) {
             if (frontierSize > N / 10) { // Example threshold for switching
                 isTopDown = !isTopDown;
             }
-
-            cout << "Frontier size: " << frontierSize << " Visited sink: " << visited[N - 1] << endl;
         }
 
         if (!visited[N - 1]) break; // No augmenting path found
