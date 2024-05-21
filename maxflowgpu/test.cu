@@ -252,8 +252,12 @@ float edmondskarp(const char* filename, int total_nodes) {
             }
             old_work = new_work;
         }
-
-        found_augmenting_path = frontier[source];
+        if(use_bottom_up){
+            found_augmenting_path = frontier[source];
+        }else{
+            found_augmenting_path = frontier[sink];
+        }
+        
 
         if (!found_augmenting_path) {
             break;
