@@ -155,6 +155,7 @@ int main(int argc, char* argv[]) {
                 cout << "TD" << endl;
                 topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             } else {
+                cout << "BU" << endl;
                 bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
             }
 
