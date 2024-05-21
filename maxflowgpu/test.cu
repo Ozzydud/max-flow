@@ -246,6 +246,8 @@ float edmondskarp(const char* filename, int total_nodes) {
             break;
         }
 
+        cout << max_flow << endl;
+
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
 
@@ -318,7 +320,7 @@ int main() {
     for (int i = 0; i < 10; i++) {
         ms += edmondskarp("cage3.mtx", 5);
     }
-
+    /*
     float ms2 = 0;
     cout << "cage9.mtx" << endl; 
     test = edmondskarp("data/cage9.mtx", 3534);
@@ -344,6 +346,6 @@ int main() {
     cout << "cage9.mtx end with an avg speed of " << ms2 / 10 << endl; 
     cout << "cage10.mtx end with an avg speed of " << ms3 / 10 << endl; 
     cout << "cage11.mtx end with an avg speed of " << ms4 / 10 << endl; 
-
+*/
     return 0;
 }
