@@ -91,13 +91,21 @@ __global__ void cudaBFS_BottomUp(int *r_capacity, int *parent, int *flow, bool *
     }
 }
 
-__global__ void cudaAugment_path(int* parent, bool* do_change_capacity, int total_nodes, int* r_capacity, int path_flow) {
+__global__ void cudaAugment_pathTD(int* parent, bool* do_change_capacity, int total_nodes, int* r_capacity, int path_flow) {
     int Idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(Idx < total_nodes && do_change_capacity[Idx]){
         r_capacity[parent[Idx] * total_nodes + Idx] -= path_flow;
         r_capacity[Idx * total_nodes + parent[Idx]] += path_flow; 
     }    
 }
+__global__ void cudaAugment_pathBU(int* parent, bool* do_change_capacity, int total_nodes, int* r_capacity, int path_flow) {
+    int Idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if(Idx < total_nodes && do_change_capacity[Idx]){
+        r_capacity[Idx * total_nodes + parent[Idx]] -= path_flow; 
+        r_capacity[parent[Idx] * total_nodes + Idx] += path_flow;
+    }    
+}
+
 
 bool source_reachable(bool* frontier, int total_nodes, int source) {
     
@@ -269,7 +277,31 @@ float edmondskarp(const char* filename, int total_nodes) {
 
         cudaMemcpy(flow, d_flow, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
         cudaMemcpy(parent, d_parent, total_nodes * sizeof(int), cudaMemcpyDeviceToHost);
+        if(did_use_BU){
+            path_flow = flow[source];
+            max_flow += path_flow;
+            cout << max_flow << endl;
 
+        for (int i = source; i != sink; i = parent[i]) {
+            cout << "test5" << endl;
+            do_change_capacity[i] = true;
+        }
+
+        cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
+        cout << "test3" << endl;
+        cudaEventRecord(startEvent2, 0);
+        cudaAugment_pathBU<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+        augCounter++;
+        cout << "test4" << endl;
+        cudaEventRecord(stopEvent2, 0);
+        cudaEventSynchronize(stopEvent2);
+
+        float augmili = 0.0f;
+        cudaEventElapsedTime(&augmili, startEvent2, stopEvent2);
+        avgAUGTime += augmili;
+
+        counter++;
+        }else{
         path_flow = flow[sink];
         max_flow += path_flow;
         cout << max_flow << endl;
@@ -282,7 +314,7 @@ float edmondskarp(const char* filename, int total_nodes) {
         cudaMemcpy(d_do_change_capacity, do_change_capacity, total_nodes * sizeof(bool), cudaMemcpyHostToDevice);
         cout << "test3" << endl;
         cudaEventRecord(startEvent2, 0);
-        cudaAugment_path<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
+        cudaAugment_pathTD<<<grid_size, block_size>>>(d_parent, d_do_change_capacity, total_nodes, d_r_capacity, path_flow);
         augCounter++;
         cout << "test4" << endl;
         cudaEventRecord(stopEvent2, 0);
@@ -293,7 +325,8 @@ float edmondskarp(const char* filename, int total_nodes) {
         avgAUGTime += augmili;
 
         counter++;
-    } while (counter != 4);
+        }
+    } while (counter != 5);
 
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
