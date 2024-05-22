@@ -88,6 +88,7 @@ void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
 }
 
 int main(int argc, char* argv[]) {
+    cudaSetDevice(7);
     if (argc != 2) {
         cout << "Usage: " << argv[0] << " <input_file>" << endl;
         return 1;

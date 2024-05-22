@@ -127,6 +127,8 @@ bool sink_reachable(bool* frontier, int total_nodes, int sink){
 
 
 float edmondskarp(const char* filename, int total_nodes) {
+    cudaSetDevice(7);
+
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
