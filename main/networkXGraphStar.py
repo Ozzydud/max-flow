@@ -23,15 +23,15 @@ G.add_nodes_from(range(number_of_nodes))
 def generate_weight():
     return round(random.uniform(0.1, 1.0), 8)
 
-# Add edges from the central node to all other nodes
-for i in range(number_of_nodes - 1):
-    G.add_edge(number_of_nodes - 1, i, weight=generate_weight())
+# Add edges from the first node to all other nodes
+for i in range(1, number_of_nodes):
+    G.add_edge(0, i, weight=generate_weight())
 
 print(f"The graph has {G.number_of_nodes()} nodes and {G.number_of_edges()} edges.")
 
 # Define source and sink
-source = number_of_nodes - 1  # Last node is the central node (sink)
-sink = number_of_nodes - 1    # Last node also acts as the source
+source = 0                    # First node is the source
+sink = number_of_nodes - 1    # Last node is the central node (sink)
 
 # Create a custom function to write the matrix
 def write_matrix(G, filename):
