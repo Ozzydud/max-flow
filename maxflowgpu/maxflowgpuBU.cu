@@ -269,7 +269,6 @@ float edmondskarp(const char* filename, int total_nodes) {
         float bfsmili = 0.0f;
         cudaEventElapsedTime(&bfsmili, startEvent, stopEvent);
         avgBFSTime += bfsmili;
-        cout << "test2" << endl;
 
         cudaMemcpy(frontier, d_frontier, total_nodes * sizeof(bool), cudaMemcpyDeviceToHost);
         }
@@ -287,7 +286,6 @@ float edmondskarp(const char* filename, int total_nodes) {
         max_flow += path_flow;
 
         for (int i = source; i != sink; i = parent[i]) {
-            cout << "test" << endl;
             do_change_capacity[i] = true;
         }
 
