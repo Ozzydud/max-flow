@@ -370,7 +370,7 @@ float ms = 0;
     cout << "stargraph" << endl; 
     float test3 = edmondskarp("data/stargraph2.mtx", 10000);
     for(int i = 0; i<10; i++){
-        ms += edmondskarp("data/stargraph2.mtx", 10000);
+        ms3 += edmondskarp("data/stargraph2.mtx", 10000);
     }
     
 /* float ms2 = 0;
