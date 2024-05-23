@@ -7,7 +7,6 @@
 #include <string>
 #include <climits>
 
-#define N 11397 // Number of nodes (example size)
 
 using namespace std;
 
@@ -83,27 +82,16 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
     }
 }
 
-void bfs(int *adjMatrix, int n, int source, int sink, int &maxFlow) {
-    // This function is unused in the current implementation, so let's remove it.
-}
-
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        cout << "Usage: " << argv[0] << " <input_file>" << endl;
-        return 1;
-    }
-
-    const char* filename = argv[1];
-
+float edmondskarp(char* filename, int total_nodes){
     int *residual;
     try {
-	residual = new int[N * N]();
+	residual = new int[total_nodes * total_nodes]();
     } catch (const std::bad_alloc& e) {
 	    std::cerr << "Failed to allocate memory for the residual matrix: " << e.what() << std::endl;
 	    return 1;
     }
 
-    readInput(filename, N, residual);
+    readInput(filename, total_nodes, residual);
 
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
@@ -117,22 +105,22 @@ int main(int argc, char* argv[]) {
     bool *frontier, *newFrontier;
     int *visited, *parent, *flow, *locks;
     int* adjMatrix;
-    if (cudaMallocManaged(&locks, N * sizeof(int)) != cudaSuccess ||
-        cudaMallocManaged(&adjMatrix, N * N * sizeof(int)) != cudaSuccess ||
-        cudaMallocManaged(&frontier, N * sizeof(bool)) != cudaSuccess ||
-        cudaMallocManaged(&newFrontier, N * sizeof(bool)) != cudaSuccess ||
-        cudaMallocManaged(&visited, N * sizeof(int)) != cudaSuccess ||
-        cudaMallocManaged(&parent, N * sizeof(int)) != cudaSuccess ||
-        cudaMallocManaged(&flow, N * sizeof(int)) != cudaSuccess) {
+    if (cudaMallocManaged(&locks, total_nodes * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&adjMatrix, total_nodes * total_nodes * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&frontier, total_nodes * sizeof(bool)) != cudaSuccess ||
+        cudaMallocManaged(&newFrontier, total_nodes * sizeof(bool)) != cudaSuccess ||
+        cudaMallocManaged(&visited, total_nodes * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&parent, total_nodes * sizeof(int)) != cudaSuccess ||
+        cudaMallocManaged(&flow, total_nodes * sizeof(int)) != cudaSuccess) {
         cerr << "Memory allocation failed" << endl;
         return 1;
     }
-    cudaMemcpy(adjMatrix, residual, N * N * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(adjMatrix, residual, total_nodes * total_nodes * sizeof(int), cudaMemcpyHostToDevice);
 
 
     while (true) {
         // Reset state for the new BFS iteration
-        for (int i = 0; i < N; ++i) {
+        for (int i = 0; i < total_nodes; ++i) {
             frontier[i] = false;
             newFrontier[i] = false;
             visited[i] = 0;
@@ -147,14 +135,14 @@ int main(int argc, char* argv[]) {
         bool isTopDown = true;
         int frontierSize = 1;
 
-        while (frontierSize > 0 && !visited[N - 1]) { // Assume sink is node N-1
+        while (frontierSize > 0 && !visited[total_nodes - 1]) { // Assume sink is node N-1
             int blockSize = 512;
-            int numBlocks = (N + blockSize - 1) / blockSize;
+            int numBlocks = (total_nodes + blockSize - 1) / blockSize;
 
             if (isTopDown) {
-                topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
+                topDownBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, total_nodes, parent, flow, locks);
             } else {
-                bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, N, parent, flow, locks);
+                bottomUpBFS<<<numBlocks, blockSize>>>(adjMatrix, frontier, newFrontier, visited, total_nodes, parent, flow, locks);
             }
 
             cudaDeviceSynchronize();
@@ -166,7 +154,7 @@ int main(int argc, char* argv[]) {
 
             // Count new frontier size and decide if we should switch approach
             frontierSize = 0;
-            for (int i = 0; i < N; ++i) {
+            for (int i = 0; i < total_nodes; ++i) {
                 frontier[i] = newFrontier[i];
                 newFrontier[i] = false;
                 if (frontier[i]) {
@@ -174,21 +162,21 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-            if (frontierSize > N / 10) { // Example threshold for switching
+            if (frontierSize > total_nodes / 10) { // Example threshold for switching
                 isTopDown = !isTopDown;
             }
         }
 
-        if (!visited[N - 1]) break; // No augmenting path found
+        if (!visited[total_nodes - 1]) break; // No augmenting path found
 
-        int pathFlow = flow[N - 1];
+        int pathFlow = flow[total_nodes - 1];
         maxFlow += pathFlow;
 
-        int v = N - 1;
+        int v = total_nodes - 1;
         while (parent[v] != -1) {
             int u = parent[v];
-            adjMatrix[u * N + v] -= pathFlow;
-            adjMatrix[v * N + u] += pathFlow; // Update backward edge
+            adjMatrix[u * total_nodes + v] -= pathFlow;
+            adjMatrix[v * total_nodes + u] += pathFlow; // Update backward edge
             v = u;
         }
     }
@@ -213,5 +201,50 @@ int main(int argc, char* argv[]) {
     cudaFree(adjMatrix);
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
-    return 0;
+    return milliseconds;
+}
+
+int main() {
+    float ms = 0;
+    cout << "cage3.mtx" << endl; 
+    float test = edmondskarp("cage3.mtx", 5);
+    for(int i = 0; i<10; i++){
+        ms += edmondskarp("cage3.mtx", 5);
+    }
+
+    
+
+
+    float ms2 = 0;
+    cout << "cage9.mtx" << endl; 
+    test = edmondskarp("data/cage9.mtx", 3534);
+    for(int i = 0; i<10; i++){
+        ms2 += edmondskarp("data/cage9.mtx", 3534);
+    }
+
+    
+
+    float ms3 = 0;
+    cout << "cage10.mtx" << endl; 
+    test = edmondskarp("data/cage10.mtx", 11397);
+    for(int i = 0; i<10; i++){
+        ms3 += edmondskarp("data/cage10.mtx", 11397);
+    }
+
+    
+
+    float ms4 = 0;
+    cout << "cage11.mtx" << endl; 
+    test = edmondskarp("data/cage11.mtx", 39082);
+    for(int i = 0; i<10; i++){
+        ms4 += edmondskarp("data/cage11.mtx", 39082);
+    }
+
+    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
+    cout << "cage9.mtx end with a avg speed of" << ms2/10 << endl; 
+    cout << "cage10.mtx end with a avg speed of" << ms3/10 << endl; 
+    cout << "cage11.mtx end with a avg speed of" << ms4/10 << endl; 
+    
+    
+
 }

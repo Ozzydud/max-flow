@@ -167,9 +167,7 @@ float edmondskarp(const char* filename, int total_nodes) {
 
     // Allocating memory for a square matrix representing the graph
     //residual = (int*)malloc(sizeof(int) * total_nodes * total_nodes);
-    cout << "residual" << endl;
     //memset(residual, 0, sizeof(int) * total_nodes * total_nodes);
-    cout << "residual1" << endl;
 
     try {
 	residual = new int[total_nodes * total_nodes]();
@@ -204,20 +202,13 @@ float edmondskarp(const char* filename, int total_nodes) {
 
     size_t locks_size = total_nodes * sizeof(int);
     
-    cout << "hi1" << endl;
     // Allocate memory on device
     cudaMalloc((void**)&d_r_capacity, total_nodes * total_nodes * sizeof(int));
-    cout << "hi1" << endl;
     cudaMalloc((void**)&d_parent, total_nodes * sizeof(int));
-    cout << "hi2" << endl;
     cudaMalloc((void**)&d_flow, total_nodes * sizeof(int));
-    cout << "hi3" << endl;
     cudaMalloc((void**)&d_frontier, total_nodes * sizeof(bool));
-    cout << "hi4" << endl;
     cudaMalloc((void**)&d_visited, total_nodes * sizeof(bool));
-    cout << "hi5" << endl;
     cudaMalloc((void**)&d_do_change_capacity, total_nodes * sizeof(bool));
-    cout << "hi6" << endl;
     cudaMalloc((void**)&d_locks, locks_size);
 
 
@@ -231,7 +222,6 @@ float edmondskarp(const char* filename, int total_nodes) {
     int grid_size = ceil(total_nodes * 1.0 / block_size); //(total_nodes + block_size - 1) / block_size;
 
     
-    cout << "hi1" << endl;
     int counter = 0;
     cudaEventRecord(stopEvent3);
     cudaEventSynchronize(stopEvent3);
@@ -293,7 +283,6 @@ float edmondskarp(const char* filename, int total_nodes) {
 
         path_flow = flow[sink];
         max_flow += path_flow;
-        cout << max_flow << endl;
 
         for(int i = sink; i != source; i = parent[i]){
                         do_change_capacity[i] = true;
