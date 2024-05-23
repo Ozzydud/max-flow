@@ -128,6 +128,7 @@ bool source_reachable(bool* frontier, int total_nodes, int source) {
 
 
 float edmondskarp(const char* filename, int total_nodes) {
+    cudaSetDevice(1);
     cudaEvent_t startEvent3, stopEvent3, startEvent3_1, stopEvent3_1;
     cudaEventCreate(&startEvent3);
     cudaEventCreate(&stopEvent3);
