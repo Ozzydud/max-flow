@@ -206,7 +206,7 @@ float edmondskarp(const char* filename, int total_nodes){
 }
 
 int main() {
-    float ms = 0;
+    float ms = 0; 
     cout << "stargraph" << endl; 
     float test = edmondskarp("data/stargraph.mtx", 10000);
     for(int i = 0; i<10; i++){
