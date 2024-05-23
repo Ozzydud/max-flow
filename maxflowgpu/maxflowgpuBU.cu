@@ -233,7 +233,7 @@ float edmondskarp(const char* filename, int total_nodes) {
 	cudaEventRecord(startEvent3_1);
         for (int i = 0; i < total_nodes; ++i) {
         parent[i] = -1; // Initialize parent array
-        flow[i] = (i == source) ? INF : 0;  // Initialize flow array with INF
+        flow[i] = INF;  // Initialize flow array with INF
         locks[i] = 0;
         if(i == sink){
             frontier[i] = true;
