@@ -83,6 +83,7 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
 }
 
 float edmondskarp(const char* filename, int total_nodes){
+    cudaSetDevice(1);
     int *residual;
     try {
 	residual = new int[total_nodes * total_nodes]();
@@ -206,44 +207,37 @@ float edmondskarp(const char* filename, int total_nodes){
 
 int main() {
     float ms = 0;
-    cout << "cage3.mtx" << endl; 
-    float test = edmondskarp("cage3.mtx", 5);
+    cout << "1000" << endl; 
+    float test = edmondskarp("data/1000x400500.mtx", 1000);
     for(int i = 0; i<10; i++){
-        ms += edmondskarp("cage3.mtx", 5);
+        ms += edmondskarp("data/1000x400500.mtx", 1000);
     }
 
     
 
 
     float ms2 = 0;
-    cout << "cage9.mtx" << endl; 
-    test = edmondskarp("data/cage9.mtx", 3534);
+    cout << "5000" << endl; 
+    test = edmondskarp("data/5000x1250000.mtx", 5000);
     for(int i = 0; i<10; i++){
-        ms2 += edmondskarp("data/cage9.mtx", 3534);
+        ms2 += edmondskarp("data/5000x1250000.mtx", 5000);
     }
 
     
 
     float ms3 = 0;
-    cout << "cage10.mtx" << endl; 
-    test = edmondskarp("data/cage10.mtx", 11397);
+    cout << "10000" << endl; 
+    test = edmondskarp("data/10000x2500000.mtx", 10000);
     for(int i = 0; i<10; i++){
-        ms3 += edmondskarp("data/cage10.mtx", 11397);
+        ms3 += edmondskarp("data/10000x2500000.mtx", 10000);
     }
 
     
 
-    float ms4 = 0;
-    cout << "cage11.mtx" << endl; 
-    test = edmondskarp("data/cage11.mtx", 39082);
-    for(int i = 0; i<10; i++){
-        ms4 += edmondskarp("data/cage11.mtx", 39082);
-    }
 
-    cout << "cage3.mtx end with a avg speed of" << ms/10 << endl; 
-    cout << "cage9.mtx end with a avg speed of" << ms2/10 << endl; 
-    cout << "cage10.mtx end with a avg speed of" << ms3/10 << endl; 
-    cout << "cage11.mtx end with a avg speed of" << ms4/10 << endl; 
+    cout << "1000 end with a avg speed of" << ms/10 << endl; 
+    cout << "5000 end with a avg speed of" << ms2/10 << endl; 
+    cout << "10000 end with a avg speed of" << ms3/10 << endl;
     
     
 

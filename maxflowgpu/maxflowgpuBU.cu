@@ -361,6 +361,42 @@ float edmondskarp(const char* filename, int total_nodes) {
 }
 
 int main(){
+
+        float ms = 0;
+    cout << "1000" << endl; 
+    float test = edmondskarp("data/1000x400500.mtx", 1000);
+    for(int i = 0; i<10; i++){
+        ms += edmondskarp("data/1000x400500.mtx", 1000);
+    }
+
+    
+
+
+    float ms2 = 0;
+    cout << "5000" << endl; 
+    test = edmondskarp("data/5000x1250000.mtx", 5000);
+    for(int i = 0; i<10; i++){
+        ms2 += edmondskarp("data/5000x1250000.mtx", 5000);
+    }
+
+    
+
+    float ms3 = 0;
+    cout << "10000" << endl; 
+    test = edmondskarp("data/10000x2500000.mtx", 10000);
+    for(int i = 0; i<10; i++){
+        ms3 += edmondskarp("data/10000x2500000.mtx", 10000);
+    }
+
+    
+
+
+    cout << "1000 end with a avg speed of" << ms/10 << endl; 
+    cout << "5000 end with a avg speed of" << ms2/10 << endl; 
+    cout << "10000 end with a avg speed of" << ms3/10 << endl;
+    
+
+    /*
     float ms = 0;
     cout << "cage3.mtx" << endl; 
     float test = edmondskarp("cage3.mtx", 5);
@@ -404,5 +440,5 @@ int main(){
     
 
     // Assuming 3534 or 1107 nodes or 11397 or 39082 or 130228
-
+*/
 }
