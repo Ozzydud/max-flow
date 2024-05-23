@@ -359,32 +359,17 @@ float edmondskarp(const char* filename, int total_nodes) {
 
 int main(){
 
-float ms = 0;
-    cout << "stargraph" << endl; 
-    float test = edmondskarp("data/stargraph.mtx", 10000);
-    for(int i = 0; i<10; i++){
-        ms += edmondskarp("data/stargraph.mtx", 10000);
-    }
-
-    float ms3 = 0;
-    cout << "stargraph" << endl; 
-    float test3 = edmondskarp("data/stargraph2.mtx", 10000);
-    for(int i = 0; i<10; i++){
-        ms3 += edmondskarp("data/stargraph2.mtx", 10000);
-    }
-    
-/* float ms2 = 0;
+float ms2 = 0;
 cout << "line" << endl; 
 float test2 = edmondskarp("data/linegraph.mtx", 10000);
 for(int i = 0; i<10; i++){
     ms2 += edmondskarp("data/linegraph.mtx", 10000);
 }
-cout << "line end with a avg speed of" << ms2/10 << endl;  */
+cout << "line end with a avg speed of" << ms2/10 << endl; 
 
 
 
-    cout << "star1 middle sink end with a avg speed of" << ms/10 << endl; 
-    cout << "star2 middle source end with a avg speed of" << ms3/10 << endl; 
+    cout << "star1 middle sink end with a avg speed of" << ms2/10 << endl; 
     
 
     /*
