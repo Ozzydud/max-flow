@@ -384,7 +384,7 @@ cout << "line end with a avg speed of" << ms2/10 << endl;  */
 
 
     cout << "star1 middle sink end with a avg speed of" << ms/10 << endl; 
-    cout << "star2 middle source end with a avg speed of" << ms/10 << endl; 
+    cout << "star2 middle source end with a avg speed of" << ms3/10 << endl; 
     
 
     /*
