@@ -82,7 +82,7 @@ __global__ void bottomUpBFS(int *adjMatrix, bool *frontier, bool *newFrontier, i
     }
 }
 
-float edmondskarp(char* filename, int total_nodes){
+float edmondskarp(const char* filename, int total_nodes){
     int *residual;
     try {
 	residual = new int[total_nodes * total_nodes]();
